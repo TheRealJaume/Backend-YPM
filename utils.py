@@ -1,19 +1,3 @@
-def get_department_task_estimation(self, task_dict, department):
-    # Filtrar el input para el departamento
-
-    # Create a prompt specifically for department subtasks
-    department_template = ChatPromptTemplate.from_messages(
-        [
-            ("system",
-             "Eres un experto en estimaciones de tiempos y tienes que definir el tiempo que se invierte en cada una de las tareas y subtareas que se envían."
-             "La respuesta debe estar en un formato de texto, evita los objetos json"
-             "La respuesta no debe incluir ningún otro texto que el solicitado en la petición"),
-            ("user",
-             "Incluye entre paréntesis (ejm. (8h)) la estimación de cada una de las tareas y subtareas que aparecen a continuación:"
-             "{task_list}")
-        ]
-    )
-    return department_template.format_prompt(task_list=result)
 
 
 

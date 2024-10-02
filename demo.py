@@ -14,7 +14,9 @@ import pandas as pd
 class GeminiProjectManager:
 
     def __init__(self, company_name, company_definition, project_definition, project_tools, project_teams,
-                 num_tasks_per_department, num_subtasks_per_department):
+                 num_tasks_per_department, num_subtasks_per_department, excel_file):
+
+        load_dotenv()
 
         self.company_name = company_name
         self.company_definition = company_definition
@@ -24,14 +26,12 @@ class GeminiProjectManager:
         self.num_tasks_per_department = num_tasks_per_department
         self.num_subtasks_per_department = num_subtasks_per_department
         self.model = GoogleGenerativeAI(model="gemini-1.5-flash")
+        self.excel_file = excel_file
 
         # Diccionario para almacenar las tareas organizadas por departamento y fase
         self.tasks_dict = defaultdict(lambda: {"department": "", "phases": []})
 
     def generate_tasks(self):
-        tasks = []
-
-        load_dotenv()
 
         # Create a Gemini model
         model = GoogleGenerativeAI(model="gemini-1.5-flash")
@@ -62,13 +62,11 @@ class GeminiProjectManager:
 
         department_branch_chain = lambda department: (
                 RunnableLambda(lambda x: self.divide_task_by_department(department, x))
-                | RunnableLambda(lambda x: self.get_department_subtasks(x))
+                # | RunnableLambda(lambda x: self.get_department_subtasks(x))
                 | RunnableLambda(lambda x: self.get_department_task_estimation(x, department))
-                | model
-                | StrOutputParser()
         )
 
-        departments = [dept.strip().lower() for dept in self.project_teams.split(",")]
+        departments = [dept.strip() for dept in self.project_teams.split(",")]
 
         # Generar dinámicamente las ramas para el paralelismo de departamentos
         branches_phase_1 = {department: department_branch_chain(department) for department in departments}
@@ -79,8 +77,10 @@ class GeminiProjectManager:
                 | model
                 | StrOutputParser()
                 | RunnableParallel(branches=branches_phase_1)
-                # | RunnableLambda(lambda x: self.export_tasks_to_excel(x))
         )
+
+        if self.excel_file:
+            self.export_tasks_to_excel()
 
         result = chain.invoke(
             {
@@ -93,8 +93,7 @@ class GeminiProjectManager:
             }
         )
         print("TASK_DICT", self.tasks_dict)
-        print(result)
-        return tasks
+        return result
 
     def divide_task_by_department(self, department, result):
         # Unir el resultado en un solo string
@@ -135,7 +134,7 @@ class GeminiProjectManager:
                 task_counter = 1
                 for task in tasks:
                     if task:  # Solo agregar si la tarea no está vacía
-                        formatted_tasks.append({str(task_counter): task})
+                        formatted_tasks.append({str(task_counter): {'description': task}})
                         task_counter += 1
 
                 # Solo añadir la fase si hay tareas no vacías
@@ -155,59 +154,92 @@ class GeminiProjectManager:
         # Convertir a un diccionario normal (en lugar de defaultdict)
         return dict(self.tasks_dict)  # Retorna el diccionario si es necesario
 
+    def get_department_task_estimation(self, task_dict, department):
+        # Filtrar el input para el departamento
+        task_list = task_dict[department]['phases']
 
-    def get_department_subtasks(self, tasks_list):
-        # Iterar sobre cada departamento en tasks_list
-        for department, department_info in tasks_list.items():
-            phases = department_info["phases"]
+        # Crear un prompt específicamente para subtareas del departamento
+        estimation_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system",
+                 "Eres un experto en estimaciones de tiempos y tienes que definir el tiempo que se invierte en cada una de las tareas y subtareas que se envían."
+                 " La respuesta debe estar en un formato de texto, evita los objetos json."
+                 " La respuesta no debe incluir ningún otro texto que el solicitado en la petición."
+                 " La respuesta debe ser el mismo diccionario que se envía con las horas incluidas como un elemento más en cada tarea con la llave hours."),
+                ("user",
+                 "Incluye entre paréntesis (EJM. 1. Definicion de tarea (8)) la estimación de cada una de las fases, tareas y subtareas que aparecen a continuación:"
+                 "{task_list}")
+            ]
+        )
 
-            # Iterar sobre cada fase dentro del departamento
+        # Crear una secuencia para invocar el modelo y parsear la salida
+        estimation_chain = (
+                estimation_prompt
+                | self.model
+                | StrOutputParser()
+        )
+
+        # Invocar el modelo pasando el prompt formateado como input
+        result = estimation_chain.invoke(
+            {"task_list": task_list}
+        )
+        # Procesar el resultado para añadir estimaciones al diccionario
+        estimated_tasks = result.split('\n')
+
+        # Actualizar el diccionario
+        self.tasks_dict[department] = estimated_tasks
+
+    def list_tasks_from_phases(self, task_list):
+        # Crear una lista única para todas las tareas
+        listed_tasks = []
+
+        # Recorrer cada fase y agregar las tareas a la lista all_tasks
+        for phase in task_list:
+            for task in phase['tasks']:
+                # Acceder al valor de la tarea, independientemente de la clave (que es un número como string)
+                task_description = list(task.values())[0]
+                listed_tasks.append(task_description)
+        return listed_tasks
+
+    def export_tasks_to_excel(self, filename="tasks.xlsx"):
+        # Crear una lista vacía para almacenar los datos
+        data = []
+
+        # Iterar sobre cada departamento en el diccionario TASK_DICT
+        for department, tasks in self.tasks_dict.items():
+            # Convertir el string de tareas a una lista de diccionarios usando eval (con precaución)
+            try:
+                phases = eval(tasks[0])  # El primer elemento de la lista es el contenido real de las fases y tareas
+            except Exception as e:
+                print(f"Error al evaluar las tareas del departamento {department}: {e}")
+                continue
+
+            # Iterar sobre las fases
             for phase in phases:
-                tasks = phase["tasks"]
+                phase_name = phase['phase']
 
-                # Iterar sobre cada tarea dentro de la fase
-                for task in tasks:
-                    # Acceder a la llave y valor de la tarea sin conocer la llave
-                    task_key, task_value = list(task.items())[0]
+                # Iterar sobre las tareas dentro de cada fase
+                for task in phase['tasks']:
+                    for task_id, task_details in task.items():
+                        task_description = task_details['description']
+                        time_estimate = task_details.get('horas', task_details.get('hours', 'No especificado'))
 
-                    # Crear un prompt para cada tarea
-                    subtask_prompt = ChatPromptTemplate.from_messages(
-                        [
-                            ("system",
-                             "Eres un experto en {department} y tienes que desarrollar {num_subtasks} subtareas para cada una de las tareas que se envían. "
-                             "La respuesta debe estar en un formato de texto, evita los objetos json. "
-                             "La respuesta no debe incluir ningún otro texto que el solicitado en la petición. "
-                             "La respuesta debe tener el siguiente formato: -Subtarea 1: ..., -Subtarea 2: ..., etc."),
-                            ("user",
-                             "Crea la lista de las subtareas para la tarea enviada, teniendo en cuenta todos los aspectos necesarios para entregar de manera correcta y en tiempo "
-                             "el proyecto que se está desarrollando. Esta es la tarea que tiene el departamento: {prompt_task}")
-                        ]
-                    )
+                        # Añadir a la lista de datos
+                        data.append({
+                            'Departamento': department,
+                            'Fase': phase_name,
+                            'Tarea': f"Tarea {task_id}",
+                            'Descripción de la Tarea': task_description,
+                            'Estimación de Tiempo': time_estimate
+                        })
 
-                    # Crear una secuencia para invocar el modelo y parsear la salida
-                    subtask_chain = (
-                            subtask_prompt
-                            | self.model
-                            | StrOutputParser()
-                    )
+        # Crear un DataFrame de pandas
+        df = pd.DataFrame(data)
 
-                    # Invocar el modelo pasando el prompt formateado como input
-                    result = subtask_chain.invoke(
-                        {"department": department,
-                         "prompt_task": task_value,
-                         "num_subtasks": self.num_subtasks_per_department
-                         }
-                    )
+        # Guardar el DataFrame en un archivo Excel
+        df.to_excel(filename, index=False, engine='openpyxl')
 
-                    # Limpiar las subtareas generadas (en este caso, separadas por "- Subtarea X:")
-                    subtasks = [line.replace("- ", "").strip() for line in result.split("\n") if line.strip()]
-
-                    # Formatear las subtareas como un diccionario
-                    formatted_subtasks = [{str(index + 1): subtask} for index, subtask in enumerate(subtasks)]
-
-                    # Añadir las subtareas a la tarea actual en el diccionario
-                    task["subtasks"] = formatted_subtasks
-        return self.tasks_dict
+        print(f"Las tareas han sido exportadas a '{filename}' exitosamente.")
 
 
 ai_projectmanager = GeminiProjectManager(company_name="Google",
@@ -216,5 +248,6 @@ ai_projectmanager = GeminiProjectManager(company_name="Google",
                                          project_tools="Frontend: React, Backend: Django",
                                          project_teams="Gestión, Desarrollo",
                                          num_tasks_per_department=1,
-                                         num_subtasks_per_department=1)
+                                         num_subtasks_per_department=1,
+                                         excel_file=False)
 ai_projectmanager.generate_tasks()
