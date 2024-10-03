@@ -1,4 +1,5 @@
-# views.py
+import json
+import requests
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import login
@@ -7,10 +8,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-
-import json
-import requests
 from django.contrib.auth.models import User
+
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -37,7 +37,8 @@ def google_login(request):
         last_name = user_data.get('family_name', '')
 
         if not email:
-            return Response({'error': 'No se pudo obtener el email del token de Google'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No se pudo obtener el email del token de Google'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         # Check if there is already a linked SocialAccount
         try:
@@ -87,4 +88,29 @@ def google_login(request):
             })
 
     except Exception as e:
-        return Response({'error': 'Error al procesar el inicio de sesión con Google', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Error al procesar el inicio de sesión con Google', 'details': str(e)},
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+def refresh_token(request):
+    refresh_token = request.data.get('refresh')
+
+    if not refresh_token:
+        return Response({'error': 'Refresh token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Crea una nueva instancia de RefreshToken a partir del refresh token recibido
+        token = RefreshToken(refresh_token)
+
+        # Verifica si el refresh token está expirado
+        if token.is_expired():
+            return Response({'error': 'Refresh token expirado'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # Genera un nuevo access token
+        access_token = str(token.access_token)
+
+        return Response({'access': access_token}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({'error': 'Error al refrescar el token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
