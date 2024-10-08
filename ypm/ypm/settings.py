@@ -55,6 +55,14 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+# Applications created in local
+LOCAL_APPS = [
+    'company',
+]
+
+INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
