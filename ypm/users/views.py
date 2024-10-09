@@ -3,13 +3,13 @@ import requests
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import login
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 
 @csrf_exempt
@@ -90,6 +90,20 @@ def google_login(request):
     except Exception as e:
         return Response({'error': 'Error al procesar el inicio de sesión con Google', 'details': str(e)},
                         status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def google_logout(request):
+    # Method to logout the user from the application
+    try:
+        refresh_token = request.data['refresh_token']
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        return Response("Logout OK", status=status.HTTP_200_OK)
+    except TokenError:
+        raise AuthenticationFailed("Invalid Token")
 
 
 @api_view(['POST'])

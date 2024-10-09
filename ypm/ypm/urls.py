@@ -1,11 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
-from users.views import google_login, refresh_token
+from users.views import google_login, google_logout, refresh_token
+from company.urls import urlpatterns as company_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # auth and token
     path('accounts/', include('allauth.urls')),
-    path('auth/google/', google_login, name='google_login'),
+    path('login/google', google_login, name='google_login'),
+    path('logout', google_logout, name='google_logout'),
     path('auth/token/refresh/', refresh_token, name='refresh_token'),
+    # company
+    path('', include(company_urls), name='company'),
+
 ]

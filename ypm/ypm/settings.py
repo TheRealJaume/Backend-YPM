@@ -51,8 +51,10 @@ INSTALLED_APPS = [
     # Django rest framework
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
     # Corsheaders
     'corsheaders',
+
 ]
 
 # Applications created in local
@@ -99,6 +101,7 @@ WSGI_APPLICATION = 'ypm.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost",
+    "http://localhost:5173",
 ]
 
 
