@@ -23,4 +23,4 @@ class CompanyDepartment(UUIDModel, SoftDeletableModel, TimeStampedModel):
         return self.id
 
     class Meta:
-        db_table = 'departments_companydepartment'
+        db_table = 'departments_company_department'

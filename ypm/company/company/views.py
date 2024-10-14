@@ -39,6 +39,8 @@ class CompanyViewset(viewsets.ModelViewSet):
         # Check if the information sent is valid
         is_valid = serializer.is_valid()
         if is_valid:
+            # Send the request user to be included
+            serializer.validated_data['owner'] = request.user
             company = serializer.create(validated_data=serializer.validated_data)
             return Response(CompanyResponses.CreateCompany200(data={"id": company.id}), 200)
         else:

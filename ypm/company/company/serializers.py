@@ -24,3 +24,9 @@ class CreateCompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
         fields = ["name", "description"]
+
+    def create(self, validated_data):
+        company = Company(name=validated_data['name'], description=validated_data['description'],
+                          owner=validated_data['owner'])
+        company.save()
+        return company

@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('department', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='departments', to='company.department')),
             ],
             options={
-                'db_table': 'departments_companydepartment',
+                'db_table': 'departments_company_department',
             },
         ),
     ]
