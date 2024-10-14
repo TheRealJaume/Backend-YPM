@@ -61,6 +61,7 @@ INSTALLED_APPS = [
 LOCAL_APPS = [
     'users',
     'company',
+    'project'
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
