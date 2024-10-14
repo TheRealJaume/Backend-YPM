@@ -59,11 +59,14 @@ INSTALLED_APPS = [
 
 # Applications created in local
 LOCAL_APPS = [
+    'users',
     'company',
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
 
+# USER MODEL
+AUTH_USER_MODEL = "users.User"
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',

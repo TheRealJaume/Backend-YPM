@@ -3,21 +3,56 @@ import requests
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import login
-from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.permissions import IsAuthenticated
 
+from users.models import User
+from users.responses import UserResponses, OnboardingResponses
+from users.serializers import UserRetrieveSerializer, UserMeRetrieveSerializer
+
+
+class UserViewset(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    lookup_field = 'id'
+    serializer_class = User
+    serializer_action_classes = {
+        # "list": EventOrganizerListSerializer,
+        # "update": UserUpdateSerializer,
+        "retrieve": UserRetrieveSerializer,
+        "me": UserMeRetrieveSerializer,
+    }
+    filter_backends = [
+        # UserRoleUserQueryset,
+        SearchFilter, OrderingFilter]
+    permission_classes = [
+        # UserPermission,
+        IsAuthenticated]
+
+    def get_serializer_class(self):
+        try:
+            return self.serializer_action_classes[self.action]
+        except (KeyError, AttributeError):
+            super().get_serializer_class()
+
+    @action(detail=False, methods=['get'])
+    def me(self, request, *args, **kwargs):
+        # Get serializer class
+        serializer_class = self.get_serializer_class()
+        serializer = serializer_class(instance=request.user)
+        return Response(UserResponses.GetUserMe200(data=serializer.data),
+                        status=status.HTTP_200_OK)
 
 @csrf_exempt
 @api_view(['POST'])
 def google_login(request):
     # Get the token from the request body
-    body = json.loads(request.body)
-    token = body.get('token')
+    token = request.data['token']
 
     if not token:
         return Response({'error': 'Token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
@@ -128,3 +163,18 @@ def refresh_token(request):
 
     except Exception as e:
         return Response({'error': 'Error al refrescar el token', 'details': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['POST'])
+def onboarding(request):
+    try:
+        user = User.objects.get(id=request.user.id)
+        if request.data['onboarding']:
+            user.onboarding = True
+        else:
+            user.onboarding = False
+        user.save()
+        return Response(OnboardingResponses.UpdateOnboarding200(), 200)
+    except Exception as e:
+        raise e("Bad Request from frontend")

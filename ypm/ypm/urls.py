@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
-from users.views import google_login, google_logout, refresh_token
+from users.views import google_login, google_logout, refresh_token, onboarding
 from company.urls import urlpatterns as company_urls
+from users.urls import urlpatterns as user_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -10,7 +11,9 @@ urlpatterns = [
     path('login/google', google_login, name='google_login'),
     path('logout', google_logout, name='google_logout'),
     path('auth/token/refresh/', refresh_token, name='refresh_token'),
+    path('onboarding/', onboarding, name='onboarding'),
     # company
     path('', include(company_urls), name='company'),
+    path('', include(user_urls), name='user'),
 
 ]
