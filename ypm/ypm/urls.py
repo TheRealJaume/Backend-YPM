@@ -4,6 +4,7 @@ from users.views import google_login, google_logout, refresh_token, onboarding
 from project.urls import urlpatterns as project_urls
 from company.urls import urlpatterns as company_urls
 from users.urls import urlpatterns as user_urls
+from technologies.urls import urlpatterns as technology_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,5 +20,7 @@ urlpatterns = [
     path('', include(project_urls), name='project'),
     # user
     path('', include(user_urls), name='user'),
+    # technology
+    path('', include(technology_urls), name='technology'),
 ]
 
