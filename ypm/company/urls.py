@@ -10,7 +10,7 @@ router = DefaultRouter()
 router.register(r'^company', CompanyViewset, basename='company')
 router.register(r'^company-department', CompanyDepartmentViewset, basename='company_department')
 router.register(r'^department', DepartmentViewset, basename='department')
-router.register(r'^workers', WorkerViewset, basename='worker')
+router.register(r'^worker', WorkerViewset, basename='worker')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

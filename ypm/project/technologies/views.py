@@ -4,25 +4,27 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from company.workers.models import Worker
-from company.workers.responses import WorkerResponses
-from company.workers.serializers import WorkerSerializer, CreateWorkerSerializer, ListWorkerSerializer
+# PROJECT TECHNOLOGY
+from project.technologies.models import ProjectTechnology
+from project.technologies.responses import ProjectTechnologyResponses
+from project.technologies.serializers import ProjectTechnologySerializer, ProjectTechnologyCreateSerializer
 
 
-class WorkerViewset(viewsets.ModelViewSet):
-    queryset = Worker.objects.all()
-    serializer_class = WorkerSerializer
+class ProjectTechnologyViewset(viewsets.ModelViewSet):
+    queryset = ProjectTechnology.objects.all()
+    lookup_field = 'id'
+    serializer_class = ProjectTechnologySerializer
     serializer_action_classes = {
-        "create": CreateWorkerSerializer,
-        "list": ListWorkerSerializer
-        # "retrieve": RetrieveWorkerSerializer
-        # "update": UpdateWorkerSerializer
+        # "list": ProjectTechnologyListSerializer,
+        # "update": ProjectTechnologyUpdateSerializer,
+        # "retrieve": ProjectTechnologyRetrieveSerializer,
+        "create": ProjectTechnologyCreateSerializer,
     }
     filter_backends = [
-        # UserRoleWorkerQueryset,
+        # UserRoleUserQueryset,
         SearchFilter, OrderingFilter]
     permission_classes = [
-        # WorkerUserPermission,
+        # UserPermission,
         IsAuthenticated]
 
     def get_serializer_class(self):
@@ -40,6 +42,6 @@ class WorkerViewset(viewsets.ModelViewSet):
         is_valid = serializer.validate(data=request.data)
         if is_valid:
             serializer.create(validated_data=request.data)
-            return Response(WorkerResponses.CreateWorker200(), 200)
+            return Response(ProjectTechnologyResponses.CreateProjectTechnology200(), 200)
         else:
-            return Response(WorkerResponses.CreateWorker400(error=serializer.errors), 400)
+            return Response(ProjectTechnologyResponses.CreateProjectTechnology400(error=serializer.errors), 400)
