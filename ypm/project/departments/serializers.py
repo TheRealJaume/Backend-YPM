@@ -31,10 +31,10 @@ class ProjectDepartmentCreateSerializer(serializers.ModelSerializer):
         return True
 
     def create(self, validated_data):
-        project_department = ProjectDepartment(project__id=validated_data['project'],
-                                               department__name=validated_data['department'])
-        project_department.save()
-        return project_department
+        for department in validated_data['departments']:
+            project_department = ProjectDepartment(project__id=validated_data['project'],
+                                                   department__name=department)
+            project_department.save()
 
 
 # RETRIEVE

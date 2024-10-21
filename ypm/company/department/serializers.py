@@ -39,6 +39,28 @@ class CompanyDepartmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+# RETRIEVE
+class RetrieveCompanyDepartmentSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders all the information from the CompanyDepartment model
+    """
+
+    class Meta:
+        model = CompanyDepartment
+        fields = ["company", "department"]
+
+
+# LIST
+class ListCompanyDepartmentSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders all the information from the CompanyDepartment model
+    """
+
+    class Meta:
+        model = CompanyDepartment
+        fields = ["company", "department"]
+
+
 # CREATE
 class CreateCompanyDepartmentSerializer(serializers.ModelSerializer):
     """

@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from company.department.models import CompanyDepartment, Department
 from company.department.responses import CompanyDepartmentResponses
 from company.department.serializers import CreateCompanyDepartmentSerializer, CompanyDepartmentSerializer, \
-    DepartmentSerializer, ListDepartmentSerializer
+    DepartmentSerializer, ListDepartmentSerializer, ListCompanyDepartmentSerializer, RetrieveCompanyDepartmentSerializer
 
 
 class CompanyDepartmentViewset(viewsets.ModelViewSet):
@@ -15,12 +15,12 @@ class CompanyDepartmentViewset(viewsets.ModelViewSet):
     serializer_class = CompanyDepartmentSerializer
     serializer_action_classes = {
         "create": CreateCompanyDepartmentSerializer,
-        # "list": ListCompanyDepartmentSerializer
-        # "retrieve": RetrieveCompanyDepartmentSerializer
+        "list": ListCompanyDepartmentSerializer,
+        "retrieve": RetrieveCompanyDepartmentSerializer
         # "update": UpdateCompanyDepartmentSerializer
     }
     filter_backends = [
-        # UserRoleDepartmentQueryset,
+        # UserRoleCompanyDepartmentQueryset,
         SearchFilter, OrderingFilter]
     permission_classes = [
         # DepartmentUserPermission,

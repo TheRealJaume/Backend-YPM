@@ -7,6 +7,7 @@ from rest_framework.response import Response
 
 # PROJECT DEPARTMENT
 from project.departments.models import ProjectDepartment
+from project.departments.responses import ProjectDepartmentResponses
 from project.departments.serializers import ProjectDepartmentSerializer, ProjectDepartmentCreateSerializer
 
 

@@ -7,8 +7,6 @@ from project.workers.models import ProjectWorker
 # PROJECT WORKER
 
 # GENERIC
-
-
 class ProjectWorkerSerializer(serializers.ModelSerializer):
     """
     This serializer renders all the information from the ProjectWorker model
@@ -17,6 +15,19 @@ class ProjectWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectWorker
         fields = "__all__"
+
+
+# INFO
+class ProjectWorkerInfoSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders basic information about the ProjectWorker model
+    """
+    first_name = serializers.CharField(source='worker.first_name', read_only=True)
+    last_name = serializers.CharField(source='worker.last_name', read_only=True)
+
+    class Meta:
+        model = ProjectWorker
+        fields = ["first_name", "last_name"]
 
 
 # CREATE

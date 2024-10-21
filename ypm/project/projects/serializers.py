@@ -5,7 +5,7 @@ from project.projects.models import Project
 from project.technologies.models import ProjectTechnology
 from project.technologies.serializers import ProjectTechnologySerializer
 from project.workers.models import ProjectWorker
-from project.workers.serializers import ProjectWorkerSerializer
+from project.workers.serializers import ProjectWorkerSerializer, ProjectWorkerInfoSerializer
 
 
 # PROJECT
@@ -84,6 +84,6 @@ class InfoProjectSerializer(serializers.ModelSerializer):
 
     def get_project_workers(self, project):
         try:
-            return ProjectWorkerSerializer(ProjectWorker.objects.filter(project__id=project.id), many=True).data
+            return ProjectWorkerInfoSerializer(ProjectWorker.objects.filter(project__id=project.id), many=True).data
         except Exception as e:
             return str(e)

@@ -7,17 +7,18 @@ from rest_framework.response import Response
 # PROJECT TECHNOLOGY
 from project.technologies.models import ProjectTechnology
 from project.technologies.responses import ProjectTechnologyResponses
-from project.technologies.serializers import ProjectTechnologySerializer, ProjectTechnologyCreateSerializer
+from project.technologies.serializers import ProjectTechnologySerializer, ProjectTechnologyCreateSerializer, \
+    ProjectTechnologyListSerializer, ProjectTechnologyRetrieveSerializer
 
 
 class ProjectTechnologyViewset(viewsets.ModelViewSet):
     queryset = ProjectTechnology.objects.all()
-    lookup_field = 'id'
+    lookup_field = 'project_id'
     serializer_class = ProjectTechnologySerializer
     serializer_action_classes = {
-        # "list": ProjectTechnologyListSerializer,
+        "list": ProjectTechnologyListSerializer,
         # "update": ProjectTechnologyUpdateSerializer,
-        # "retrieve": ProjectTechnologyRetrieveSerializer,
+        "retrieve": ProjectTechnologyRetrieveSerializer,
         "create": ProjectTechnologyCreateSerializer,
     }
     filter_backends = [

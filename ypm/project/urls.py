@@ -8,9 +8,9 @@ from project.workers.views import ProjectWorkerViewset
 # Create a router and register our ViewSets with it.
 router = DefaultRouter()
 router.register('project',  ProjectViewset, basename='project')
-router.register(r'^project-technology',  ProjectTechnologyViewset, basename='project-technology')
-router.register(r'^project-worker',  ProjectWorkerViewset, basename='project-worker')
-router.register(r'^project-department',  ProjectDepartmentViewset, basename='project-department')
+router.register('project-technology',  ProjectTechnologyViewset, basename='project-technology')
+router.register('project-worker',  ProjectWorkerViewset, basename='project-worker')
+router.register('project-department',  ProjectDepartmentViewset, basename='project-department')
 
 
 # The API URLs are now determined automatically by the router.
