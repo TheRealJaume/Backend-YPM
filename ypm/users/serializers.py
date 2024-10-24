@@ -15,6 +15,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "email", "first_name", "last_name", "is_active", "role"]
 
 
+
 # Me (personal information)
 class UserMeRetrieveSerializer(serializers.ModelSerializer):
 
