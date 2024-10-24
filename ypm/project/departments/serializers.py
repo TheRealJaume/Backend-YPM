@@ -1,11 +1,15 @@
 from rest_framework import serializers
 
+from company.department.models import Department
 from project.departments.models import ProjectDepartment
 
 
 # PROJECT
 
 # GENERIC
+from project.projects.models import Project
+
+
 class ProjectDepartmentSerializer(serializers.ModelSerializer):
     """
     This serializer renders all the information from the ProjectDepartment model
@@ -31,9 +35,11 @@ class ProjectDepartmentCreateSerializer(serializers.ModelSerializer):
         return True
 
     def create(self, validated_data):
-        for department in validated_data['departments']:
-            project_department = ProjectDepartment(project__id=validated_data['project'],
-                                                   department__name=department)
+        project = Project.objects.get(id=validated_data['project'])
+        for department_name in validated_data['departments']:
+            department = Department.objects.get(name=department_name)
+            project_department = ProjectDepartment(project=project,
+                                                   department=department)
             project_department.save()
 
 
@@ -57,3 +63,28 @@ class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectDepartment
         fields = ["id", "project", "department"]
+
+
+# INFO
+class ProjectDepartmentInfoSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to retrieve project department information
+    """
+    name = serializers.CharField(source='department.name', read_only=True)
+    description = serializers.CharField(source='department.description', read_only=True)
+
+    class Meta:
+        model = ProjectDepartment
+        fields = ["name", "description"]
+
+
+# PROJECT TASK
+class ProjectDepartmentTaskSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to handle project department tasks
+       """
+    name = serializers.CharField(source='department.name', read_only=True)
+
+    class Meta:
+        model = ProjectDepartment
+        fields = ["name"]

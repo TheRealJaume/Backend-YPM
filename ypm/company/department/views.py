@@ -9,6 +9,10 @@ from company.department.responses import CompanyDepartmentResponses
 from company.department.serializers import CreateCompanyDepartmentSerializer, CompanyDepartmentSerializer, \
     DepartmentSerializer, ListDepartmentSerializer, ListCompanyDepartmentSerializer, RetrieveCompanyDepartmentSerializer
 
+class UserCompanyDepartmentFilter:
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(company__owner=request.user)
 
 class CompanyDepartmentViewset(viewsets.ModelViewSet):
     queryset = CompanyDepartment.objects.all()
@@ -21,7 +25,7 @@ class CompanyDepartmentViewset(viewsets.ModelViewSet):
     }
     filter_backends = [
         # UserRoleCompanyDepartmentQueryset,
-        SearchFilter, OrderingFilter]
+        UserCompanyDepartmentFilter, SearchFilter, OrderingFilter]
     permission_classes = [
         # DepartmentUserPermission,
         IsAuthenticated]

@@ -55,10 +55,11 @@ class ListCompanyDepartmentSerializer(serializers.ModelSerializer):
     """
     This serializer renders all the information from the CompanyDepartment model
     """
+    name = serializers.CharField(source="department.name")
 
     class Meta:
         model = CompanyDepartment
-        fields = ["company", "department"]
+        fields = ["name"]
 
 
 # CREATE
@@ -90,3 +91,14 @@ class CreateCompanyDepartmentSerializer(serializers.ModelSerializer):
             company_department = CompanyDepartment(company=Company.objects.get(id=validated_data['company']),
                                                    department=Department.objects.get(name=department))
             company_department.save()
+
+
+# PROJECT TASK
+class ProjectTaskDepartmentSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to serialize department information for project tasks creation
+    """
+
+    class Meta:
+        model = Department
+        fields = ["id", "name"]

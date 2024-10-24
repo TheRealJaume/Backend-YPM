@@ -1,4 +1,3 @@
-import json
 import requests
 
 from allauth.socialaccount.models import SocialAccount
@@ -15,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.models import User
 from users.responses import UserResponses, OnboardingResponses
 from users.serializers import UserRetrieveSerializer, UserMeRetrieveSerializer
+from ypm import settings
 
 
 class UserViewset(viewsets.ModelViewSet):
@@ -47,6 +47,7 @@ class UserViewset(viewsets.ModelViewSet):
         serializer = serializer_class(instance=request.user)
         return Response(UserResponses.GetUserMe200(data=serializer.data),
                         status=status.HTTP_200_OK)
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -103,7 +104,8 @@ def google_login(request):
                     last_name=last_name,
                     password=None  # Users logging in via Google don’t need a password
                 )
-
+                response = requests.post(url=settings.AI_SERVER_URL + "/login/google",
+                                         json={"token": token})
             # Create a SocialAccount for the new user
             social_account = SocialAccount.objects.create(
                 user=user,

@@ -20,7 +20,7 @@ class CompanyDepartment(UUIDModel, SoftDeletableModel, TimeStampedModel):
     department = models.ForeignKey('company.Department', on_delete=models.CASCADE, related_name='departments')
 
     def __str__(self):
-        return self.id
+        return self.company.name + '-' + self.department.name
 
     class Meta:
         db_table = 'departments_company_department'

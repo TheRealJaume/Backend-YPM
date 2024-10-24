@@ -60,3 +60,15 @@ class ProjectTechnologyListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectTechnology
         fields = ["name", "description"]
+
+
+# PROJECT TASK
+class ProjectTechnologyTaskSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to handle creation of project's technologies with tasks
+    """
+    name = serializers.CharField(source='technology.name', read_only=True)
+
+    class Meta:
+        model = ProjectTechnology
+        fields = ["name"]

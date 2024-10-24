@@ -1,6 +1,8 @@
 from rest_framework import serializers
 
 from company.company.models import Company
+from project.departments.models import ProjectDepartment
+from project.departments.serializers import ProjectDepartmentInfoSerializer
 from project.projects.models import Project
 from project.technologies.models import ProjectTechnology
 from project.technologies.serializers import ProjectTechnologySerializer
@@ -71,10 +73,11 @@ class InfoProjectSerializer(serializers.ModelSerializer):
     """
     workers = serializers.SerializerMethodField("get_project_workers")
     technologies = serializers.SerializerMethodField("get_project_technologies")
+    departments = serializers.SerializerMethodField("get_project_departments")
 
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "workers", "technologies"]
+        fields = ["id", "name", "description", "workers", "technologies", "departments"]
 
     def get_project_technologies(self, project):
         try:
@@ -85,5 +88,11 @@ class InfoProjectSerializer(serializers.ModelSerializer):
     def get_project_workers(self, project):
         try:
             return ProjectWorkerInfoSerializer(ProjectWorker.objects.filter(project__id=project.id), many=True).data
+        except Exception as e:
+            return str(e)
+
+    def get_project_departments(self, project):
+        try:
+            return ProjectDepartmentInfoSerializer(ProjectDepartment.objects.filter(project__id=project.id), many=True).data
         except Exception as e:
             return str(e)

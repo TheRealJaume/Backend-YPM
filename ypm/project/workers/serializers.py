@@ -4,6 +4,7 @@ from company.workers.models import Worker
 from project.projects.models import Project
 from project.workers.models import ProjectWorker
 
+
 # PROJECT WORKER
 
 # GENERIC
@@ -72,3 +73,17 @@ class ProjectWorkerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectWorker
         fields = ["name", "description"]
+
+
+# PROJECT TASK
+class ProjectWorkerTaskSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders basic information about the ProjectWorker model
+    """
+
+    first_name = serializers.CharField(source="worker.first_name")
+    last_name = serializers.CharField(source="worker.last_name")
+
+    class Meta:
+        model = ProjectWorker
+        fields = ["first_name", "last_name"]

@@ -55,6 +55,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
                                     company=Company.objects.get(id=validated_data["company"]))
             company_worker.save()
 
+
 # LIST
 class ListWorkerSerializer(serializers.ModelSerializer):
     """
@@ -64,3 +65,14 @@ class ListWorkerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Worker
         fields = ["id", "first_name", "last_name", "company"]
+
+
+# PROJECT TASK
+class ProjectTaskWorkerSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to render the information from workers for project tasks
+    """
+
+    class Meta:
+        model = Worker
+        fields = ["first_name", "last_name"]

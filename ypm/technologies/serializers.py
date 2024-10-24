@@ -54,3 +54,14 @@ class ListTechnologySerializer(serializers.ModelSerializer):
     class Meta:
         model = Technology
         fields = ["name", "description", "group"]
+
+
+# PROJECT TASK
+class ProjectTaskTechnologySerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to handle tehcnology information associated with project tasks
+    """
+
+    class Meta:
+        model = Technology
+        fields = ["name", "description"]
