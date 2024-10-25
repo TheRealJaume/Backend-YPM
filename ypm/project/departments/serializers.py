@@ -2,14 +2,11 @@ from rest_framework import serializers
 
 from company.department.models import Department
 from project.departments.models import ProjectDepartment
-
+from project.projects.models import Project
 
 # PROJECT
 
 # GENERIC
-from project.projects.models import Project
-
-
 class ProjectDepartmentSerializer(serializers.ModelSerializer):
     """
     This serializer renders all the information from the ProjectDepartment model
@@ -78,8 +75,8 @@ class ProjectDepartmentInfoSerializer(serializers.ModelSerializer):
         fields = ["name", "description"]
 
 
-# PROJECT TASK
-class ProjectDepartmentTaskSerializer(serializers.ModelSerializer):
+# AI PROJECT TASK
+class AIProjectDepartmentTaskSerializer(serializers.ModelSerializer):
     """
     This serializer is used to handle project department tasks
        """

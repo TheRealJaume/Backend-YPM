@@ -62,8 +62,8 @@ class ProjectTechnologyListSerializer(serializers.ModelSerializer):
         fields = ["name", "description"]
 
 
-# PROJECT TASK
-class ProjectTechnologyTaskSerializer(serializers.ModelSerializer):
+# AI PROJECT TASK
+class AIProjectTechnologyTaskSerializer(serializers.ModelSerializer):
     """
     This serializer is used to handle creation of project's technologies with tasks
     """

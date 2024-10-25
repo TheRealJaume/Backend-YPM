@@ -17,3 +17,15 @@ VALUES('2024-10-15 17:34:19.496', '2024-10-15 17:34:19.496', false, '038d67b0-a3
 INSERT INTO public.technologies_technology
 (created, modified, is_removed, id, "name", description, "group")
 VALUES('2024-10-15 17:34:28.639', '2024-10-15 17:34:28.639', false, 'd569b10c-878c-4f4a-aa45-f34c8661490b'::uuid, 'React', '', 'Frontend');
+
+
+-- PROJECT PHASES
+INSERT INTO public.projects_project_phase
+(created, modified, is_removed, id, "name", description)
+VALUES('2024-10-21 21:14:29.951', '2024-10-21 21:14:29.951', false, '5d41f693-bd2f-4b71-8ae6-6813e1b379b4'::uuid, 'Planificación y toma de requisitos', 'Planificación y toma de requisitos');
+INSERT INTO public.projects_project_phase
+(created, modified, is_removed, id, "name", description)
+VALUES('2024-10-21 21:14:29.951', '2024-10-21 21:14:29.951', false, '5d41f693-bd2f-4b71-8ae6-6813e1b379b3'::uuid, 'Desarrollo e Implementación', 'Desarrollo e Implementación');
+INSERT INTO public.projects_project_phase
+(created, modified, is_removed, id, "name", description)
+VALUES('2024-10-21 21:14:29.951', '2024-10-21 21:14:29.951', false, '5d41f693-bd2f-4b71-8ae6-6813e1b379b2'::uuid, 'Entrega y puesta en producción', 'Entrega y puesta en producción');

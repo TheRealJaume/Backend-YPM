@@ -42,4 +42,16 @@ class ProjectResponses:
         return ProjectResponses.fill_failed_responses(message_code=4,
                                                          # "Data sent is not valid to create a Project",
                                                          error=error,
-                                                         code=400)
+                                                         code=204)
+    @staticmethod
+    def ProjectTasks200(data="None"):
+        return ProjectResponses.fill_success_responses(message_code=5,  # "Project created successfully",
+                                                          data=data,
+                                                          code=200)
+
+    @staticmethod
+    def ProjectTasks204(error="None"):
+        return ProjectResponses.fill_failed_responses(message_code=6,
+                                                         # "Data sent is not valid to create a Project",
+                                                         error=error,
+                                                         code=204)

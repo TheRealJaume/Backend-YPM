@@ -75,8 +75,8 @@ class ProjectWorkerListSerializer(serializers.ModelSerializer):
         fields = ["name", "description"]
 
 
-# PROJECT TASK
-class ProjectWorkerTaskSerializer(serializers.ModelSerializer):
+# AI PROJECT TASK
+class AIProjectWorkerTaskSerializer(serializers.ModelSerializer):
     """
     This serializer renders basic information about the ProjectWorker model
     """

@@ -2,12 +2,12 @@ from rest_framework import serializers
 
 from company.company.models import Company
 from project.departments.models import ProjectDepartment
-from project.departments.serializers import ProjectDepartmentInfoSerializer
+from project.departments.serializers import ProjectDepartmentInfoSerializer, AIProjectDepartmentTaskSerializer
 from project.projects.models import Project
 from project.technologies.models import ProjectTechnology
-from project.technologies.serializers import ProjectTechnologySerializer
+from project.technologies.serializers import ProjectTechnologySerializer, AIProjectTechnologyTaskSerializer
 from project.workers.models import ProjectWorker
-from project.workers.serializers import ProjectWorkerSerializer, ProjectWorkerInfoSerializer
+from project.workers.serializers import ProjectWorkerInfoSerializer, AIProjectWorkerTaskSerializer
 
 
 # PROJECT
@@ -93,6 +93,48 @@ class InfoProjectSerializer(serializers.ModelSerializer):
 
     def get_project_departments(self, project):
         try:
-            return ProjectDepartmentInfoSerializer(ProjectDepartment.objects.filter(project__id=project.id), many=True).data
+            return ProjectDepartmentInfoSerializer(ProjectDepartment.objects.filter(project__id=project.id),
+                                                   many=True).data
+        except Exception as e:
+            return str(e)
+
+
+# Project task serializer for AI
+class AITaskProjectSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders all the information from the Task Project model
+    """
+    workers = serializers.SerializerMethodField("get_project_workers")
+    technologies = serializers.SerializerMethodField("get_project_technologies")
+    departments = serializers.SerializerMethodField("get_project_departments")
+    company = serializers.SerializerMethodField("get_project_company")
+
+    class Meta:
+        model = Project
+        fields = ["description", "workers", "technologies", "departments", "company"]
+
+    def get_project_technologies(self, project):
+        try:
+            return AIProjectTechnologyTaskSerializer(ProjectTechnology.objects.filter(project__id=project.id),
+                                                     many=True).data
+        except Exception as e:
+            return str(e)
+
+    def get_project_workers(self, project):
+        try:
+            return AIProjectWorkerTaskSerializer(ProjectWorker.objects.filter(project__id=project.id), many=True).data
+        except Exception as e:
+            return str(e)
+
+    def get_project_departments(self, project):
+        try:
+            return AIProjectDepartmentTaskSerializer(ProjectDepartment.objects.filter(project__id=project.id),
+                                                     many=True).data
+        except Exception as e:
+            return str(e)
+
+    def get_project_company(self, project):
+        try:
+            return {"name": project.company.name, "description": project.company.description}
         except Exception as e:
             return str(e)

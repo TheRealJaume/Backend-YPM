@@ -60,7 +60,7 @@ INSTALLED_APPS = [
 LOCAL_APPS = [
     'users',
     'company',
-    'project',
+    'project.apps.ProjectConfig',
     'technologies'
 ]
 

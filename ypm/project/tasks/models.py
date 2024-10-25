@@ -11,6 +11,8 @@ class ProjectTask(UUIDModel, SoftDeletableModel, TimeStampedModel):
     sprint = models.ForeignKey("project.ProjectSprint", null=True, blank=True,
                                on_delete=models.CASCADE, related_name='sprints')
     project = models.ForeignKey("project.Project", on_delete=models.CASCADE, db_column="project")
+    phase = models.ForeignKey("project.ProjectPhase", on_delete=models.CASCADE, db_column="phase")
+    department = models.ForeignKey("project.ProjectDepartment", on_delete=models.CASCADE, db_column="department")
 
     def __str__(self):
         return self.name

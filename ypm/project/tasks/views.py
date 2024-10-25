@@ -4,12 +4,18 @@ from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
+from project.projects.models import Project
 from project.tasks.models import ProjectTask
 from project.tasks.responses import ProjectTaskResponses
 from project.tasks.serializers import TaskProjectSerializer
-from project.tasks.utils import get_ai_server_request
+from project.tasks.utils import get_ai_server_request, save_tasks_in_database, serialize_project_tasks
+
+
+class ProjectTaskFilter:
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(project=request.GET['project'])
 
 
 class TaskViewset(viewsets.ModelViewSet):
@@ -25,7 +31,7 @@ class TaskViewset(viewsets.ModelViewSet):
     }
     filter_backends = [
         # UserRoleUserQueryset,
-        SearchFilter, OrderingFilter]
+        ProjectTaskFilter, SearchFilter, OrderingFilter]
     permission_classes = [
         # UserPermission,
         IsAuthenticated]
@@ -46,4 +52,11 @@ class TaskViewset(viewsets.ModelViewSet):
         if response.status_code == 200:
             # Get the response from AI server
             response_data = response.json()['data']
-            return Response(ProjectTaskResponses.CreateProjectTask200(response_data), 200)
+            # Save the information in database
+            saved, message = save_tasks_in_database(task_info=response_data, project=request.data['project'])
+            if saved:
+                project = Project.objects.get(id=request.data['project'])
+                serialized_tasks = serialize_project_tasks(project)
+                return Response(ProjectTaskResponses.CreateProjectTask200(serialized_tasks), 200)
+            else:
+                return Response(ProjectTaskResponses.CreateProjectTask400(error=message), 400)
