@@ -3,6 +3,7 @@ from rest_framework import serializers
 from company.company.models import Company
 from project.departments.models import ProjectDepartment
 from project.departments.serializers import ProjectDepartmentInfoSerializer, AIProjectDepartmentTaskSerializer
+from project.jira.models import ProjectJira
 from project.projects.models import Project
 from project.technologies.models import ProjectTechnology
 from project.technologies.serializers import ProjectTechnologySerializer, AIProjectTechnologyTaskSerializer
@@ -74,10 +75,11 @@ class InfoProjectSerializer(serializers.ModelSerializer):
     workers = serializers.SerializerMethodField("get_project_workers")
     technologies = serializers.SerializerMethodField("get_project_technologies")
     departments = serializers.SerializerMethodField("get_project_departments")
+    jira_project = serializers.SerializerMethodField("get_jira_project")
 
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "workers", "technologies", "departments"]
+        fields = ["id", "name", "description", "workers", "technologies", "departments", "jira_project"]
 
     def get_project_technologies(self, project):
         try:
@@ -97,6 +99,12 @@ class InfoProjectSerializer(serializers.ModelSerializer):
                                                    many=True).data
         except Exception as e:
             return str(e)
+
+    def get_jira_project(self, project):
+        try:
+            return ProjectJira.objects.get(project=project).id
+        except Exception as e:
+            return None
 
 
 # Project task serializer for AI

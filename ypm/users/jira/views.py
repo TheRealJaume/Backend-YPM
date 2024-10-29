@@ -43,7 +43,7 @@ class JiraUserViewset(viewsets.ModelViewSet):
         # Check if the information sent is valid
         is_valid = serializer.validate(data=request.data)
         if is_valid:
-            serializer.create(validated_data=request.data)
-            return Response(JiraUserResponses.CreateJiraUser200(), 200)
+            jira_user = serializer.create(validated_data=request.data)
+            return Response(JiraUserResponses.CreateJiraUser200({"url": jira_user.url, "username": jira_user.username, "token": jira_user.token}), 200)
         else:
             return Response(JiraUserResponses.CreateJiraUser400(error=serializer.errors), 400)
