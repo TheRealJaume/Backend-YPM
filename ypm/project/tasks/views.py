@@ -1,11 +1,16 @@
+import os
+
 import requests
 from django.db import transaction
+from jira import JIRA
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from project.projects.models import Project
+from project.projects.utils import get_jira_project
 from project.tasks.models import ProjectTask
 from project.tasks.responses import ProjectTaskResponses
 from project.tasks.serializers import TaskProjectSerializer
@@ -60,3 +65,55 @@ class TaskViewset(viewsets.ModelViewSet):
                 return Response(ProjectTaskResponses.CreateProjectTask200(serialized_tasks), 200)
             else:
                 return Response(ProjectTaskResponses.CreateProjectTask400(error=message), 400)
+
+    @action(detail=False, methods=['post'])
+    def export_to_jira(self, request, *args, **kwargs):
+        # Conexión con Jira
+        connection = JIRA(server=os.getenv('JIRA_URL'),
+                          basic_auth=(os.getenv('JIRA_USERNAME'), os.getenv('JIRA_TOKEN')))
+        # Get the jira project id
+        project = get_jira_project(project_name=os.getenv('JIRA_PROJECT_NAME'), connection=connection)
+        # TODO: Tomar el key desde el objeto ProjectJira
+        issue_dict = {
+            'project': project.key,
+            'summary': "Esta es la prueba que YPM se conecta con JIRA",
+            'description': 'Description de la tareas que comprueba que se puede conectar JIRA con YPM',
+            'issuetype': {'name': "Task"},
+        }
+
+        # Crear la tarea en Jira
+        try:
+            new_issue = connection.create_issue(fields=issue_dict)
+            print(f"Tarea creada en Jira con clave: {new_issue.key}")
+            return Response(ProjectTaskResponses.ProjectTasksExport200(), 200)
+        except Exception as e:
+            print(f"Error al crear la tarea en Jira: {e}")
+            return Response(ProjectTaskResponses.ProjectTasksExport204(), 204)
+
+    @action(detail=False, methods=['post'])
+    def estimate(self, request, *args, **kwargs):
+        # Manage the request to AI server
+        ai_request = get_ai_server_request(request.data)
+        # Send the request to AI server
+        response = requests.post(ai_request['url'], json=ai_request['data'])
+        # Check if the request to AI server was successful
+        if response.status_code == 200:
+            # Get the response from AI server
+            response_data = response.json()['data']
+            # Save the information in database
+            saved = True
+            # saved, message = save_estimation_in_database(task_info=response_data, project=request.data['project'])
+            if saved:
+                project = Project.objects.get(id=request.data['project'])
+                serialized_tasks = serialize_project_tasks(project)
+                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
+            else:
+                return Response(ProjectTaskResponses.ProjectTasksEstimation204(error=message), 400)
+
+    @action(detail=False, methods=['post'])
+    def assign(self, request, *args, **kwargs):
+        try:
+            return Response(ProjectTaskResponses.ProjectTasksEstimation200(), 200)
+        except Exception as e:
+            print(f"Error al estimar las tareas: {e}")
+            return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 204)

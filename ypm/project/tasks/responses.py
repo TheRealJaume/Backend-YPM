@@ -22,24 +22,51 @@ class ProjectTaskResponses:
     @staticmethod
     def CreateProjectTask200(data="None"):
         return ProjectTaskResponses.fill_success_responses(message_code=1,  # "ProjectTask created successfully",
-                                                          data=data,
-                                                          code=200)
+                                                           data=data,
+                                                           code=200)
 
     @staticmethod
     def CreateProjectTask400(error="None"):
         return ProjectTaskResponses.fill_failed_responses(message_code=2,
-                                                         # "Data sent is not valid to create a ProjectTask",
-                                                         error=error,
-                                                         code=400)
+                                                          # "Data sent is not valid to create a ProjectTask",
+                                                          error=error,
+                                                          code=400)
+
     @staticmethod
     def DetailProjectTask200(data="None"):
         return ProjectTaskResponses.fill_success_responses(message_code=3,  # "ProjectTask created successfully",
-                                                          data=data,
-                                                          code=200)
+                                                           data=data,
+                                                           code=200)
 
     @staticmethod
     def DetailProjectTask204(error="None"):
         return ProjectTaskResponses.fill_failed_responses(message_code=4,
-                                                         # "Data sent is not valid to create a ProjectTask",
-                                                         error=error,
-                                                         code=400)
+                                                          # "Data sent is not valid to create a ProjectTask",
+                                                          error=error,
+                                                          code=400)
+
+    @staticmethod
+    def ProjectTasksExport200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=5,  # "Project created successfully",
+                                                           data=data,
+                                                           code=200)
+
+    @staticmethod
+    def ProjectTasksExport204(error="None"):
+        return ProjectTaskResponses.fill_failed_responses(message_code=6,
+                                                          # "Data sent is not valid to create a Project",
+                                                          error=error,
+                                                          code=204)
+
+    @staticmethod
+    def ProjectTasksEstimation200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=7,  # "Project created successfully",
+                                                           data=data,
+                                                           code=200)
+
+    @staticmethod
+    def ProjectTasksEstimation204(error="None"):
+        return ProjectTaskResponses.fill_failed_responses(message_code=8,
+                                                          # "Data sent is not valid to create a Project",
+                                                          error=error,
+                                                          code=204)

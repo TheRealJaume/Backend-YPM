@@ -1,7 +1,4 @@
-import os
-
 from django.db import transaction
-from jira import JIRA
 
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -14,7 +11,6 @@ from project.projects.models import Project
 from project.projects.responses import ProjectResponses
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
     CreateProjectSerializer, InfoProjectSerializer
-from project.projects.utils import get_jira_project
 from project.tasks.utils import serialize_project_tasks
 
 
@@ -78,26 +74,3 @@ class ProjectViewset(viewsets.ModelViewSet):
                 return Response(ProjectResponses.ProjectTasks204(), 204)
             serialized_tasks = serialize_project_tasks(project)
             return Response(ProjectResponses.ProjectTasks200(serialized_tasks), 200)
-
-    @action(detail=False, methods=['post'])
-    def jira(self, request, *args, **kwargs):
-        # Conexión con Jira
-        connection = JIRA(server=os.getenv('JIRA_URL'), basic_auth=(os.getenv('JIRA_USERNAME'), os.getenv('JIRA_TOKEN')))
-        # Get the jira project id
-        project = get_jira_project(project_name=os.getenv('JIRA_PROJECT_NAME'), connection=connection)
-        # TODO: Tomar el key desde el objeto ProjectJira
-        issue_dict = {
-            'project': project.key,
-            'summary': "Esta es la prueba que YPM se conecta con JIRA",
-            'description': 'Description de la tareas que comprueba que se puede conectar JIRA con YPM',
-            'issuetype': {'name': "Task"},
-        }
-
-        # Crear la tarea en Jira
-        try:
-            new_issue = connection.create_issue(fields=issue_dict)
-            print(f"Tarea creada en Jira con clave: {new_issue.key}")
-            return Response(ProjectResponses.ProjectTasks200(), 200)
-        except Exception as e:
-            print(f"Error al crear la tarea en Jira: {e}")
-            return Response(ProjectResponses.ProjectTasks204(), 204)

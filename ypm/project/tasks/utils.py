@@ -3,6 +3,7 @@ from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
 from project.tasks.models import ProjectTask
+from project.tasks.serializers import AITaskEstimationSerializer
 from ypm import settings
 
 
@@ -10,17 +11,32 @@ def get_ai_server_request(data, num_tasks=3):
     """
     This function is used to retrieve the AI server request.
     """
-    if data['target'] == 'project':
+    #TODO: Implementar el solicitar tareas por departamento o fase-departamento
+    if data['action'] == 'create':
+        if data['target'] == 'project':
+            url = "/tasks/project/"
+            try:
+                project = Project.objects.get(id=data['project'])
+                data = AITaskProjectSerializer(project).data
+            except Exception as e:
+                return str(e)
+
+    elif data['action'] == 'estimate':
+        url = "/tasks/estimate/"
         try:
-            project = Project.objects.get(id=data['project'])
-            data = AITaskProjectSerializer(project).data
+            project_tasks = ProjectTask.objects.filter(project=data['project'])
+            many = True if project_tasks.count() > 1 else False
+            project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
+            data = AITaskEstimationSerializer(project_tasks_data, many=many).data
         except Exception as e:
             return str(e)
-        return {
-            'url': settings.AI_SERVER_URL + "/tasks/project/",
-            'data': data
-        }
-
+    else:
+        url = None
+        data = None
+    return {
+        'url': settings.AI_SERVER_URL + url,
+        'data': data
+    }
 
 def save_tasks_in_database(task_info, project):
     """
