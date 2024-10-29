@@ -34,7 +34,7 @@ def save_tasks_in_database(task_info, project):
             for phase in phases:
                 phase_name = phase['name']
                 try:
-                    project_phase = ProjectPhase.objects.get(name=phase_name)
+                    project_phase = ProjectPhase.objects.get(name=phase_name, project=project)
                 except:
                     project_phase = ProjectPhase.objects.create(name=phase_name, description=phase_name, project=project)
                 tasks = phase['tasks']

@@ -83,9 +83,9 @@ class ProjectViewset(viewsets.ModelViewSet):
     def jira(self, request, *args, **kwargs):
         # Conexión con Jira
         connection = JIRA(server=os.getenv('JIRA_URL'), basic_auth=(os.getenv('JIRA_USERNAME'), os.getenv('JIRA_TOKEN')))
-
         # Get the jira project id
         project = get_jira_project(project_name=os.getenv('JIRA_PROJECT_NAME'), connection=connection)
+        # TODO: Tomar el key desde el objeto ProjectJira
         issue_dict = {
             'project': project.key,
             'summary': "Esta es la prueba que YPM se conecta con JIRA",

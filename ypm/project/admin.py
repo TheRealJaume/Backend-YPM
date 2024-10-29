@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from project.departments.models import ProjectDepartment
+from project.jira.models import ProjectJira
 from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.sprints.models import ProjectSprint
@@ -15,3 +16,4 @@ admin.site.register(ProjectDepartment)
 admin.site.register(ProjectSprint)
 admin.site.register(ProjectTask)
 admin.site.register(ProjectPhase)
+admin.site.register(ProjectJira)
