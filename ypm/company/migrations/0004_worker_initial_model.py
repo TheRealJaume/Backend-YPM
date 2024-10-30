@@ -23,6 +23,8 @@ class Migration(migrations.Migration):
                 ('id', model_utils.fields.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('first_name', models.CharField(max_length=240)),
                 ('last_name', models.CharField(max_length=240)),
+                ('time', models.IntegerField()),
+                ('level', models.CharField(max_length=240)),
                 ('company', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='workers', to='company.company')),
             ],
             options={

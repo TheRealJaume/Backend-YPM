@@ -77,7 +77,7 @@ def serialize_project_tasks(project):
             phase_dict = {"id": str(phase.id), "name": phase.name, "tasks": []}
             phase_tasks = project_tasks.filter(department=project_department, phase=phase)
             for task in phase_tasks:
-                task_dict = {"id": str(task.id), "name": task.name, "description": task.description}
+                task_dict = {"id": str(task.id), "name": task.name, "description": task.description, "time": task.time}
                 phase_dict["tasks"].append(task_dict)
             department_dict["phases"].append(phase_dict)
         project_dict["departments"].append(department_dict)

@@ -38,21 +38,10 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         workers = validated_data.pop("workers")
         for worker in workers:
-            # Divide the string to extract the first name and the last name
-            name_parts = worker.split(" ")
-
-            # Save the first name on a variable
-            first_name = name_parts[0]
-
-            # If there's more than one last name, save both on the last name variable
-            if len(name_parts) > 1:
-                last_name = " ".join(name_parts[1:])
-            else:
-                last_name = ''
-
             # Create a new worker
-            company_worker = Worker(first_name=first_name, last_name=last_name,
-                                    company=Company.objects.get(id=validated_data["company"]))
+            company_worker = Worker(first_name=worker['first_name'], last_name=worker['last_name'],
+                                    company=Company.objects.get(id=validated_data["company"]),
+                                    time=worker['time'], level=worker['expertise'])
             company_worker.save()
 
 

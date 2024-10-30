@@ -6,6 +6,8 @@ class Worker(UUIDModel, SoftDeletableModel, TimeStampedModel):
     """ Model representing a worker """
     first_name = models.CharField(max_length=240, null=False, blank=False)
     last_name = models.CharField(max_length=240, null=False, blank=False)
+    time = models.CharField(max_length=240, null=False, blank=False)
+    level = models.CharField(max_length=240, null=False, blank=False)
     company = models.ForeignKey('company.Company', on_delete=models.CASCADE, related_name='workers')
 
     def __str__(self):
