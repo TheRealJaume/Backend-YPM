@@ -14,7 +14,8 @@ from project.projects.utils import get_jira_project
 from project.tasks.models import ProjectTask
 from project.tasks.responses import ProjectTaskResponses
 from project.tasks.serializers import TaskProjectSerializer
-from project.tasks.utils import get_ai_server_request, save_tasks_in_database, serialize_project_tasks
+from project.tasks.utils import get_ai_server_request, save_tasks_in_database, serialize_project_tasks, \
+    save_assignment_in_database
 
 
 class ProjectTaskFilter:
@@ -67,6 +68,45 @@ class TaskViewset(viewsets.ModelViewSet):
                 return Response(ProjectTaskResponses.CreateProjectTask400(error=message), 400)
 
     @action(detail=False, methods=['post'])
+    def estimate(self, request, *args, **kwargs):
+        # Manage the request to AI server
+        ai_request = get_ai_server_request(request.data)
+        # Send the request to AI server
+        response = requests.post(ai_request['url'], json=ai_request['data'])
+        # Check if the request to AI server was successful
+        if response.status_code == 200:
+            # Get the response from AI server
+            response_data = response.json()['data']
+            # Save the information in database
+            saved = True
+            # saved, message = save_estimation_in_database(task_info=response_data, project=request.data['project'])
+            if saved:
+                project = Project.objects.get(id=request.data['project'])
+                serialized_tasks = serialize_project_tasks(project)
+                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
+            else:
+                return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 400)
+
+    @action(detail=False, methods=['post'])
+    def assign(self, request, *args, **kwargs):
+        # Manage the request to AI server
+        ai_request = get_ai_server_request(request.data)
+        # Send the request to AI server
+        response = requests.post(ai_request['url'], json=ai_request['data'])
+        # Check if the request to AI server was successful
+        if response.status_code == 200:
+            # Get the response from AI server
+            response_data = response.json()['data']
+            # Save the information in database
+            saved, message = save_assignment_in_database(task_info=response_data, project=request.data['project'])
+            if saved:
+                project = Project.objects.get(id=request.data['project'])
+                serialized_tasks = serialize_project_tasks(project)
+                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
+            else:
+                return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 400)
+
+    @action(detail=False, methods=['post'])
     def export_to_jira(self, request, *args, **kwargs):
         # Conexión con Jira
         connection = JIRA(server=os.getenv('JIRA_URL'),
@@ -89,31 +129,3 @@ class TaskViewset(viewsets.ModelViewSet):
         except Exception as e:
             print(f"Error al crear la tarea en Jira: {e}")
             return Response(ProjectTaskResponses.ProjectTasksExport204(), 204)
-
-    @action(detail=False, methods=['post'])
-    def estimate(self, request, *args, **kwargs):
-        # Manage the request to AI server
-        ai_request = get_ai_server_request(request.data)
-        # Send the request to AI server
-        response = requests.post(ai_request['url'], json=ai_request['data'])
-        # Check if the request to AI server was successful
-        if response.status_code == 200:
-            # Get the response from AI server
-            response_data = response.json()['data']
-            # Save the information in database
-            saved = True
-            # saved, message = save_estimation_in_database(task_info=response_data, project=request.data['project'])
-            if saved:
-                project = Project.objects.get(id=request.data['project'])
-                serialized_tasks = serialize_project_tasks(project)
-                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
-            else:
-                return Response(ProjectTaskResponses.ProjectTasksEstimation204(error=message), 400)
-
-    @action(detail=False, methods=['post'])
-    def assign(self, request, *args, **kwargs):
-        try:
-            return Response(ProjectTaskResponses.ProjectTasksEstimation200(), 200)
-        except Exception as e:
-            print(f"Error al estimar las tareas: {e}")
-            return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 204)

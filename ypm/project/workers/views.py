@@ -6,7 +6,9 @@ from rest_framework.response import Response
 
 from project.workers.models import ProjectWorker
 from project.workers.responses import ProjectWorkerResponses
-from project.workers.serializers import ProjectWorkerSerializer, ProjectWorkerCreateSerializer
+from project.workers.serializers import ProjectWorkerSerializer, ProjectWorkerCreateSerializer, \
+    ProjectWorkerListSerializer
+
 
 # PROJECT WORKER
 
@@ -16,7 +18,7 @@ class ProjectWorkerViewset(viewsets.ModelViewSet):
     lookup_field = 'id'
     serializer_class = ProjectWorkerSerializer
     serializer_action_classes = {
-        # "list": ProjectWorkerListSerializer,
+        "list": ProjectWorkerListSerializer,
         # "update": ProjectWorkerUpdateSerializer,
         # "retrieve": ProjectWorkerRetrieveSerializer,
         "create": ProjectWorkerCreateSerializer,

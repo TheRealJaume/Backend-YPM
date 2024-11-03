@@ -55,13 +55,3 @@ class ListWorkerSerializer(serializers.ModelSerializer):
         model = Worker
         fields = ["id", "first_name", "last_name", "company"]
 
-
-# PROJECT TASK
-class ProjectTaskWorkerSerializer(serializers.ModelSerializer):
-    """
-    This serializer is used to render the information from workers for project tasks
-    """
-
-    class Meta:
-        model = Worker
-        fields = ["first_name", "last_name"]

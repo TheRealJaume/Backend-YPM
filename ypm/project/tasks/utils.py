@@ -1,35 +1,55 @@
+from company.workers.models import Worker
 from project.departments.models import ProjectDepartment
 from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
-from project.tasks.models import ProjectTask
-from project.tasks.serializers import AITaskEstimationSerializer
+from project.tasks.models import ProjectTask, ProjectTaskWorker
+from project.tasks.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer, \
+    ProjectTaskWorkerSerializer
+from project.workers.models import ProjectWorker
+from project.workers.serializers import AIProjectWorkerSerializer
 from ypm import settings
 
 
-def get_ai_server_request(data, num_tasks=3):
+def get_ai_server_request(request_data, num_tasks=3):
     """
     This function is used to retrieve the AI server request.
     """
-    #TODO: Implementar el solicitar tareas por departamento o fase-departamento
-    if data['action'] == 'create':
-        if data['target'] == 'project':
+    # TODO: Implementar el solicitar tareas por departamento o fase-departamento
+    if request_data['action'] == 'create':
+        if request_data['target'] == 'project':
             url = "/tasks/project/"
             try:
-                project = Project.objects.get(id=data['project'])
+                project = Project.objects.get(id=request_data['project'])
                 data = AITaskProjectSerializer(project).data
             except Exception as e:
-                return str(e)
+                return {'url': None, 'data': e}
 
-    elif data['action'] == 'estimate':
+    elif request_data['action'] == 'estimate':
         url = "/tasks/estimate/"
         try:
-            project_tasks = ProjectTask.objects.filter(project=data['project'])
+            project_tasks = ProjectTask.objects.filter(project=request_data['project'])
             many = True if project_tasks.count() > 1 else False
             project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
             data = AITaskEstimationSerializer(project_tasks_data, many=many).data
         except Exception as e:
-            return str(e)
+            return {'url': None, 'data': e}
+    elif request_data['action'] == 'assign':
+        url = "/tasks/assign/"
+        try:
+            data = {}
+            # Project tasks to be sent
+            project_tasks = ProjectTask.objects.filter(project=request_data['project'])
+            many = True if project_tasks.count() > 1 else False
+            project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
+            data['tasks'] = AITaskAssignmentSerializer(project_tasks_data, many=many).data
+            # Project workers to be sent
+            project_workers = ProjectWorker.objects.filter(project=request_data['project'])
+            many = True if project_workers.count() > 1 else False
+            project_workers_data = project_workers if project_workers.count() > 1 else project_workers.first()
+            data['workers'] = AIProjectWorkerSerializer(project_workers_data, many=many).data
+        except Exception as e:
+            return {'url': None, 'data': e}
     else:
         url = None
         data = None
@@ -37,6 +57,7 @@ def get_ai_server_request(data, num_tasks=3):
         'url': settings.AI_SERVER_URL + url,
         'data': data
     }
+
 
 def save_tasks_in_database(task_info, project):
     """
@@ -52,7 +73,8 @@ def save_tasks_in_database(task_info, project):
                 try:
                     project_phase = ProjectPhase.objects.get(name=phase_name, project=project)
                 except:
-                    project_phase = ProjectPhase.objects.create(name=phase_name, description=phase_name, project=project)
+                    project_phase = ProjectPhase.objects.create(name=phase_name, description=phase_name,
+                                                                project=project)
                 tasks = phase['tasks']
                 for task in tasks:
                     project_department = ProjectDepartment.objects.get(project=project,
@@ -60,6 +82,21 @@ def save_tasks_in_database(task_info, project):
                     ProjectTask.objects.create(project=project, name=task['task_name'],
                                                description=task['task_description'],
                                                phase=project_phase, department=project_department)
+        return True, "OK"
+    except Exception as e:
+        return False, str(e)
+
+
+def save_assignment_in_database(task_info, project):
+    """
+    This function is used to save the assigned tasks in the database.
+    """
+    try:
+        for task in task_info['asigned_tasks']:
+            project_task = ProjectTask.objects.get(id=task['id'])
+            worker = Worker.objects.get(id=task['worker_id'])
+            task_worker = ProjectTaskWorker(task=project_task, worker=worker)
+            task_worker.save()
         return True, "OK"
     except Exception as e:
         return False, str(e)
@@ -77,7 +114,15 @@ def serialize_project_tasks(project):
             phase_dict = {"id": str(phase.id), "name": phase.name, "tasks": []}
             phase_tasks = project_tasks.filter(department=project_department, phase=phase)
             for task in phase_tasks:
+                # Serialize the project task workers
+                task_workers = ProjectTaskWorker.objects.filter(task=task)
+                # Create the final dictionary to be sent
                 task_dict = {"id": str(task.id), "name": task.name, "description": task.description, "time": task.time}
+                if task_workers.count() > 0:
+                    task_workers_data = task_workers if task_workers.count() > 1 else task_workers.first()
+                    many = True if task_workers.count() > 1 else False
+                    worker_dict = ProjectTaskWorkerSerializer(task_workers_data, many=many)
+                    task_dict["workers"] = worker_dict.data
                 phase_dict["tasks"].append(task_dict)
             department_dict["phases"].append(phase_dict)
         project_dict["departments"].append(department_dict)

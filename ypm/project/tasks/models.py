@@ -19,3 +19,16 @@ class ProjectTask(UUIDModel, SoftDeletableModel, TimeStampedModel):
 
     class Meta:
         db_table = 'projects_project_task'
+
+
+# TASK WORKER
+class ProjectTaskWorker(UUIDModel, SoftDeletableModel, TimeStampedModel):
+    """ Model representing the worker(s) assigned to a project task"""
+    worker = models.ForeignKey("company.Worker", on_delete=models.CASCADE, db_column="worker")
+    task = models.ForeignKey("project.ProjectTask", on_delete=models.CASCADE, db_column="task")
+
+    def __str__(self):
+        return self.worker.first_name + " " + self.task.name
+
+    class Meta:
+        db_table = 'projects_project_task_workers'
