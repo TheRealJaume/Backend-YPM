@@ -31,3 +31,17 @@ class ProjectJiraResponses:
                                                           # "Data sent is not valid to create a ProjectTask",
                                                           error=error,
                                                           code=400)
+
+    @staticmethod
+    def ListRemoteJiraProjects500(error="None"):
+        return ProjectJiraResponses.fill_failed_responses(message_code=3,
+                                                          # "Data sent is not valid to create a ProjectTask",
+                                                          error=error,
+                                                          code=500)
+
+    @staticmethod
+    def ListRemoteJiraProjects200(data="None"):
+        return ProjectJiraResponses.fill_success_responses(message_code=4,
+                                                           # "Data sent is not valid to create a ProjectTask",
+                                                           data=data,
+                                                           code=200)

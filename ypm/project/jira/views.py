@@ -1,19 +1,17 @@
-import os
-
-import requests
 from django.db import transaction
 from jira import JIRA
-from requests.auth import HTTPBasicAuth
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from project.jira.models import ProjectJira
 from project.jira.responses import ProjectJiraResponses
 from project.jira.serializers import ProjectJiraSerializer
 from project.projects.models import Project
 from project.projects.utils import get_jira_project
+from users.jira.models import JiraUser
 
 
 class ProjectJiraFilter:
@@ -48,14 +46,28 @@ class ProjectJiraViewset(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        # Connection with Jira
-        connection = JIRA(server=request.data['url'], basic_auth=(request.data['username'], request.data['token']))
-        # Get the Jira project information
-        project = get_jira_project(request.data['name'], connection=connection)
         # Save the Jira Project information in the database
         project_jira_instance = ProjectJira.objects.create(project=Project.objects.get(id=request.data['project']),
                                                            name=request.data['name'],
-                                                           key=project.key)
+                                                           key=request.data['key'])
         # Return the created instance
         serializer = ProjectJiraSerializer(project_jira_instance)
         return Response(ProjectJiraResponses.CreateProjectJira200(serializer.data), 200)
+
+    @action(detail=False, methods=['get'])
+    def remote(self, request, *args, **kwargs):
+        # Initialize the list of remote projects
+        jira_projects = []
+        try:
+            # Get jira user information
+            jira = JiraUser.objects.get(user=request.user)
+            connection = JIRA(server=jira.url, basic_auth=(jira.username, jira.token))
+            remote_projects = connection.projects()
+            for project in remote_projects:
+                jira_projects.append({"key": project.key, "name": project.name})
+            return Response(ProjectJiraResponses.ListRemoteJiraProjects200(jira_projects), 200)
+        except Exception as e:
+            print(f"Error retrieving JIRA user info: {e}")
+            return Response(ProjectJiraResponses.ListRemoteJiraProjects500(), 500)
+
+
