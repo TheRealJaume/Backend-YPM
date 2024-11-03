@@ -15,7 +15,7 @@ from project.tasks.models import ProjectTask
 from project.tasks.responses import ProjectTaskResponses
 from project.tasks.serializers import TaskProjectSerializer
 from project.tasks.utils import get_ai_server_request, save_tasks_in_database, serialize_project_tasks, \
-    save_assignment_in_database
+    save_assignment_in_database, save_estimation_in_database
 
 
 class ProjectTaskFilter:
@@ -78,8 +78,7 @@ class TaskViewset(viewsets.ModelViewSet):
             # Get the response from AI server
             response_data = response.json()['data']
             # Save the information in database
-            saved = True
-            # saved, message = save_estimation_in_database(task_info=response_data, project=request.data['project'])
+            saved, message = save_estimation_in_database(task_info=response_data)
             if saved:
                 project = Project.objects.get(id=request.data['project'])
                 serialized_tasks = serialize_project_tasks(project)
@@ -98,7 +97,7 @@ class TaskViewset(viewsets.ModelViewSet):
             # Get the response from AI server
             response_data = response.json()['data']
             # Save the information in database
-            saved, message = save_assignment_in_database(task_info=response_data, project=request.data['project'])
+            saved, message = save_assignment_in_database(task_info=response_data)
             if saved:
                 project = Project.objects.get(id=request.data['project'])
                 serialized_tasks = serialize_project_tasks(project)

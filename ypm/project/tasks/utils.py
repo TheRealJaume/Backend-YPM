@@ -87,7 +87,7 @@ def save_tasks_in_database(task_info, project):
         return False, str(e)
 
 
-def save_assignment_in_database(task_info, project):
+def save_assignment_in_database(task_info):
     """
     This function is used to save the assigned tasks in the database.
     """
@@ -97,6 +97,20 @@ def save_assignment_in_database(task_info, project):
             worker = Worker.objects.get(id=task['worker_id'])
             task_worker = ProjectTaskWorker(task=project_task, worker=worker)
             task_worker.save()
+        return True, "OK"
+    except Exception as e:
+        return False, str(e)
+
+
+def save_estimation_in_database(task_info):
+    """
+    This function is used to save the assigned tasks in the database.
+    """
+    try:
+        for task in task_info['estimated_tasks']:
+            project_task = ProjectTask.objects.get(id=task['id'])
+            project_task.time = task['task_estimation']
+            project_task.save()
         return True, "OK"
     except Exception as e:
         return False, str(e)
@@ -122,7 +136,7 @@ def serialize_project_tasks(project):
                     task_workers_data = task_workers if task_workers.count() > 1 else task_workers.first()
                     many = True if task_workers.count() > 1 else False
                     worker_dict = ProjectTaskWorkerSerializer(task_workers_data, many=many)
-                    task_dict["workers"] = worker_dict.data
+                    task_dict["workers"] = [worker_dict.data]
                 phase_dict["tasks"].append(task_dict)
             department_dict["phases"].append(phase_dict)
         project_dict["departments"].append(department_dict)
