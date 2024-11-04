@@ -4,7 +4,7 @@ from company.company.models import Company
 from project.departments.models import ProjectDepartment
 from project.departments.serializers import ProjectDepartmentInfoSerializer, AIProjectDepartmentTaskSerializer
 from project.jira.models import ProjectJira
-from project.projects.models import Project
+from project.projects.models import Project, ProjectRequirement
 from project.technologies.models import ProjectTechnology
 from project.technologies.serializers import ProjectTechnologySerializer, AIProjectTechnologyTaskSerializer
 from project.workers.models import ProjectWorker
@@ -146,3 +146,14 @@ class AITaskProjectSerializer(serializers.ModelSerializer):
             return {"name": project.company.name, "description": project.company.description}
         except Exception as e:
             return str(e)
+
+
+# PROJECT REQUIREMENT
+class ProjectRequirementSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to send the project requirement information
+    """
+
+    class Meta:
+        model = ProjectRequirement
+        fields = ['requirement']

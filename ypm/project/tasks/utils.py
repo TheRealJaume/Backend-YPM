@@ -24,7 +24,6 @@ def get_ai_server_request(request_data, num_tasks=3):
                 data = AITaskProjectSerializer(project).data
             except Exception as e:
                 return {'url': None, 'data': e}
-
     elif request_data['action'] == 'estimate':
         url = "/tasks/estimate/"
         try:
@@ -48,6 +47,20 @@ def get_ai_server_request(request_data, num_tasks=3):
             many = True if project_workers.count() > 1 else False
             project_workers_data = project_workers if project_workers.count() > 1 else project_workers.first()
             data['workers'] = AIProjectWorkerSerializer(project_workers_data, many=many).data
+        except Exception as e:
+            return {'url': None, 'data': e}
+    elif request_data['action'] == 'transcript':
+        url = "/project/requirements/transcript/"
+        try:
+            # Assign the audio file to the data parameter
+            data = request_data['file']
+        except Exception as e:
+            return {'url': None, 'data': e}
+    elif request_data['action'] == 'summarize':
+        url = "/project/requirements/summarize/"
+        try:
+            # Assign the audio file to the data parameter
+            data = request_data['text']
         except Exception as e:
             return {'url': None, 'data': e}
     else:
