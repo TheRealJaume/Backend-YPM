@@ -9,8 +9,10 @@ from rest_framework.decorators import action
 from project.jira.models import ProjectJira
 from project.jira.responses import ProjectJiraResponses
 from project.jira.serializers import ProjectJiraSerializer
+from project.jira.utils import create_jira_tasks_list
 from project.projects.models import Project
 from project.projects.utils import get_jira_project
+from project.tasks.models import ProjectTask
 from users.jira.models import JiraUser
 
 
@@ -70,4 +72,23 @@ class ProjectJiraViewset(viewsets.ModelViewSet):
             print(f"Error retrieving JIRA user info: {e}")
             return Response(ProjectJiraResponses.ListRemoteJiraProjects500(), 500)
 
-
+    @action(detail=False, methods=['post'])
+    def export_tasks(self, request, *args, **kwargs):
+        # Conexión con Jira
+        jira = JiraUser.objects.get(user=request.user)
+        connection = JIRA(server=jira.url, basic_auth=(jira.username, jira.token))
+        # Get the jira project id
+        try:
+            jira_project = ProjectJira.objects.get(id=request.data['jira_project'])
+        except ProjectJira.DoesNotExist:
+            return Response(ProjectJiraResponses.ExportJiraTasks204(), 204)
+        # Get the list of tasks for the project
+        tasks = ProjectTask.objects.filter(project__id=request.data['project'])
+        # Create a list of tasks for Jira
+        tasks_list = create_jira_tasks_list(tasks, jira_project)
+        try:
+            connection.create_issues(field_list=tasks_list)
+            return Response(ProjectJiraResponses.ExportJiraTasks200(), 200)
+        except Exception as e:
+            print(f"Error al crear la tarea en Jira: {e}")
+            return Response(ProjectJiraResponses.ExportJiraTasks400(), 400)

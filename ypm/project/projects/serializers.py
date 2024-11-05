@@ -116,6 +116,7 @@ class AITaskProjectSerializer(serializers.ModelSerializer):
     technologies = serializers.SerializerMethodField("get_project_technologies")
     departments = serializers.SerializerMethodField("get_project_departments")
     company = serializers.SerializerMethodField("get_project_company")
+    requirements = serializers.SerializerMethodField("get_project_requirements")
 
     class Meta:
         model = Project
@@ -147,9 +148,27 @@ class AITaskProjectSerializer(serializers.ModelSerializer):
         except Exception as e:
             return str(e)
 
+    def get_project_requirements(self, project):
+        try:
+            return AIProjectRequirementsSerializer(ProjectRequirement.objects.filter(project__id=project.id),
+                                                   many=True).data
+        except Exception as e:
+            return str(e)
+
 
 # PROJECT REQUIREMENT
 class ProjectRequirementSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to send the project requirement information
+    """
+
+    class Meta:
+        model = ProjectRequirement
+        fields = ['requirement']
+
+
+# AI PROJECT REQUIREMENTS
+class AIProjectRequirementsSerializer(serializers.ModelSerializer):
     """
     This serializer is used to send the project requirement information
     """

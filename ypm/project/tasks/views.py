@@ -10,7 +10,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from project.projects.models import Project
-from project.projects.utils import get_jira_project
 from project.tasks.models import ProjectTask
 from project.tasks.responses import ProjectTaskResponses
 from project.tasks.serializers import TaskProjectSerializer
@@ -104,27 +103,3 @@ class TaskViewset(viewsets.ModelViewSet):
                 return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
             else:
                 return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 400)
-
-    @action(detail=False, methods=['post'])
-    def export_to_jira(self, request, *args, **kwargs):
-        # Conexión con Jira
-        connection = JIRA(server=os.getenv('JIRA_URL'),
-                          basic_auth=(os.getenv('JIRA_USERNAME'), os.getenv('JIRA_TOKEN')))
-        # Get the jira project id
-        project = get_jira_project(project_name=os.getenv('JIRA_PROJECT_NAME'), connection=connection)
-        # TODO: Tomar el key desde el objeto ProjectJira
-        issue_dict = {
-            'project': project.key,
-            'summary': "Esta es la prueba que YPM se conecta con JIRA",
-            'description': 'Description de la tareas que comprueba que se puede conectar JIRA con YPM',
-            'issuetype': {'name': "Task"},
-        }
-
-        # Crear la tarea en Jira
-        try:
-            new_issue = connection.create_issue(fields=issue_dict)
-            print(f"Tarea creada en Jira con clave: {new_issue.key}")
-            return Response(ProjectTaskResponses.ProjectTasksExport200(), 200)
-        except Exception as e:
-            print(f"Error al crear la tarea en Jira: {e}")
-            return Response(ProjectTaskResponses.ProjectTasksExport204(), 204)
