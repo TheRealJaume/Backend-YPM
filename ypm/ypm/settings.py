@@ -106,6 +106,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost",
     "http://localhost:5173",
+    "https://ai-ypm.onrender.com/"
 ]
 
 # Database
