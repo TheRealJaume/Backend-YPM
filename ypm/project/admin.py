@@ -5,7 +5,7 @@ from project.jira.models import ProjectJira
 from project.phases.models import ProjectPhase
 from project.projects.models import Project, ProjectRequirement
 from project.sprints.models import ProjectSprint
-from project.tasks.models import ProjectTask
+from project.task.models import ProjectTask
 from project.technologies.models import ProjectTechnology
 from project.workers.models import ProjectWorker
 

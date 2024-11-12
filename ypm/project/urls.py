@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from project.departments.views import ProjectDepartmentViewset
 from project.jira.views import ProjectJiraViewset
 from project.projects.views import ProjectViewset, ProjectRequirementViewset
-from project.tasks.views import TaskViewset
+from project.task.views import TaskViewset
 from project.technologies.views import ProjectTechnologyViewset
 from project.workers.views import ProjectWorkerViewset
 

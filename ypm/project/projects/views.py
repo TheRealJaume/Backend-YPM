@@ -13,7 +13,7 @@ from project.projects.responses import ProjectResponses, ProjectRequirementRespo
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
     CreateProjectSerializer, InfoProjectSerializer, ProjectRequirementSerializer
 from project.projects.utils import save_requirements_in_database
-from project.tasks.utils import serialize_project_tasks, get_ai_server_request
+from project.task.utils import serialize_project_tasks, get_ai_server_request
 
 
 class UserFilterQueryset:

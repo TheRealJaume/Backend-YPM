@@ -70,3 +70,9 @@ class ProjectTaskResponses:
                                                           # "Data sent is not valid to create a Project",
                                                           error=error,
                                                           code=204)
+
+    @staticmethod
+    def CheckStatusProjectTask200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=9,  # "Project created successfully",
+                                                           data=data,
+                                                           code=200)

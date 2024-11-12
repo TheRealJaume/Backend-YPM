@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from project.tasks.models import ProjectTask, ProjectTaskWorker
+from project.task.models import ProjectTask, ProjectTaskWorker
 
 
 # GENERIC

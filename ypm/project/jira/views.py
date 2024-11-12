@@ -11,8 +11,7 @@ from project.jira.responses import ProjectJiraResponses
 from project.jira.serializers import ProjectJiraSerializer
 from project.jira.utils import create_jira_tasks_list
 from project.projects.models import Project
-from project.projects.utils import get_jira_project
-from project.tasks.models import ProjectTask
+from project.task.models import ProjectTask
 from users.jira.models import JiraUser
 
 

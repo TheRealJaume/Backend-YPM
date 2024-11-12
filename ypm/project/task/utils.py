@@ -3,8 +3,8 @@ from project.departments.models import ProjectDepartment
 from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
-from project.tasks.models import ProjectTask, ProjectTaskWorker
-from project.tasks.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer, \
+from project.task.models import ProjectTask, ProjectTaskWorker
+from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer, \
     ProjectTaskWorkerSerializer
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
@@ -66,10 +66,7 @@ def get_ai_server_request(request_data, num_tasks=3):
     else:
         url = None
         data = None
-    return {
-        'url': settings.AI_SERVER_URL + url,
-        'data': data
-    }
+    return data
 
 
 def save_tasks_in_database(task_info, project):
