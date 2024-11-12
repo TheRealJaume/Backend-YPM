@@ -16,6 +16,11 @@ from project.projects.utils import save_requirements_in_database
 from project.tasks.utils import serialize_project_tasks, get_ai_server_request
 
 
+class UserFilterQueryset:
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(company__owner=request.user)
+
+
 class ProjectViewset(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     lookup_field = 'id'
@@ -29,7 +34,9 @@ class ProjectViewset(viewsets.ModelViewSet):
     }
     filter_backends = [
         # UserRoleUserQueryset,
+        UserFilterQueryset,
         SearchFilter, OrderingFilter]
+
     permission_classes = [
         # UserPermission,
         IsAuthenticated]
@@ -126,4 +133,5 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
                     many = True if project_requirements.count() > 1 else False
                     data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
                     serialized_requirements = ProjectRequirementSerializer(data, many=many)
-                    return Response(ProjectRequirementResponses.CreateProjectRequirements200(serialized_requirements.data), 200)
+                    return Response(
+                        ProjectRequirementResponses.CreateProjectRequirements200(serialized_requirements.data), 200)

@@ -41,7 +41,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
             # Create a new worker
             company_worker = Worker(first_name=worker['first_name'], last_name=worker['last_name'],
                                     company=Company.objects.get(id=validated_data["company"]),
-                                    time=worker['time'], level=worker['expertise'])
+                                    time=worker['time'], level=worker['level'])
             company_worker.save()
 
 

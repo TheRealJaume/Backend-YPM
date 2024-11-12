@@ -8,6 +8,9 @@ from company.workers.models import Worker
 from company.workers.responses import WorkerResponses
 from company.workers.serializers import WorkerSerializer, CreateWorkerSerializer, ListWorkerSerializer
 
+class UserFilterQueryset:
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(company__owner=request.user)
 
 class WorkerViewset(viewsets.ModelViewSet):
     queryset = Worker.objects.all()
@@ -20,7 +23,7 @@ class WorkerViewset(viewsets.ModelViewSet):
     }
     filter_backends = [
         # UserRoleWorkerQueryset,
-        SearchFilter, OrderingFilter]
+        UserFilterQueryset, SearchFilter, OrderingFilter]
     permission_classes = [
         # WorkerUserPermission,
         IsAuthenticated]

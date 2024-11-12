@@ -120,7 +120,7 @@ class AITaskProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["description", "workers", "technologies", "departments", "company"]
+        fields = ["description", "workers", "technologies", "departments", "company", "requirements"]
 
     def get_project_technologies(self, project):
         try:

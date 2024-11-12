@@ -65,6 +65,8 @@ class TaskViewset(viewsets.ModelViewSet):
                 return Response(ProjectTaskResponses.CreateProjectTask200(serialized_tasks), 200)
             else:
                 return Response(ProjectTaskResponses.CreateProjectTask400(error=message), 400)
+        else:
+            return Response(ProjectTaskResponses.CreateProjectTask400(error="Error al recibir la información sobre tareas"), 400)
 
     @action(detail=False, methods=['post'])
     def estimate(self, request, *args, **kwargs):

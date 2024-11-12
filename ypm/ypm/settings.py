@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-n3n5gofi2g*zpz5x9&pjhr1tg(kfye6cl3t08np7&i5#0$cp*b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["backend-ypm.onrender.com"]
+ALLOWED_HOSTS = ["backend-ypm.onrender.com", "127.0.0.1", "localhost"]
 
 # Application definition
 
@@ -106,8 +106,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost",
     "http://localhost:5173",
-    "https://ai-ypm.onrender.com/",
-    "https://frontend-ypm.vercel.app/"
+    "https://ai-ypm.onrender.com",
+    "https://frontend-ypm.vercel.app"
 ]
 
 # Database
