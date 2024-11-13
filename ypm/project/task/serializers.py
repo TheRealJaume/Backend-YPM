@@ -14,6 +14,17 @@ class TaskProjectSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
+# UPDATE
+class TaskUpdateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is used to update project tasks basic information
+    """
+
+    class Meta:
+        model = ProjectTask
+        fields = ['id', 'name', 'description']
+
+
 # ESTIMATE TASK
 class AITaskEstimationSerializer(serializers.ModelSerializer):
     """

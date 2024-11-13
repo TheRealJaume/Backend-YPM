@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from project.projects.models import Project
 from project.task.models import ProjectTask
 from project.task.responses import ProjectTaskResponses
-from project.task.serializers import TaskProjectSerializer
+from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer
 from project.task.utils import get_ai_server_request, serialize_project_tasks, \
     save_assignment_in_database, save_estimation_in_database, save_tasks_in_database
 import requests
@@ -27,7 +27,7 @@ class TaskViewset(viewsets.ModelViewSet):
     serializer_class = TaskProjectSerializer
     serializer_action_classes = {
         # "list": TaskListSerializer,
-        # "update": TaskUpdateSerializer,
+        "update": TaskUpdateSerializer,
         # "retrieve": RetrieveTaskSerializer,
         # "create": CreateTaskSerializer,
         # "info": InfoTaskSerializer,
@@ -54,6 +54,23 @@ class TaskViewset(viewsets.ModelViewSet):
                 # Llamar a la tarea de manera asíncrona
                 task = request_project_tasks.delay(request.data['project'])
         return Response(ProjectTaskResponses.CreateProjectTask200({"task_id": task.id}), 200)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        project_task = ProjectTask.objects.filter(id=kwargs['id'])
+        if project_task.exists():
+            serializer_class = self.get_serializer_class()
+            serializer = serializer_class(data=request.data)
+            is_valid = serializer.is_valid()
+            if is_valid:
+                serializer.update(instance=project_task.first(), validated_data=serializer.validated_data)
+                return Response(ProjectTaskResponses.UpdateProjectTask200(),
+                                200)
+            else:
+                return Response(ProjectTaskResponses.UpdateProjectTask400(error=serializer.errors), 400)
+        else:
+            return Response(ProjectTaskResponses.UpdateProjectTask404(error="Project task not found"),
+                            404)
 
     @action(detail=False, methods=['post'])
     def estimate(self, request, *args, **kwargs):
