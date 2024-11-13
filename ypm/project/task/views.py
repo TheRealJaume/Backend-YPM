@@ -72,6 +72,17 @@ class TaskViewset(viewsets.ModelViewSet):
             return Response(ProjectTaskResponses.UpdateProjectTask404(error="Project task not found"),
                             404)
 
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        project_task = ProjectTask.objects.filter(id=kwargs['id'])
+        if project_task.exists():
+            project_task.delete()
+            return Response(ProjectTaskResponses.DeleteProjectTask200(), 200)
+        else:
+            return Response(ProjectTaskResponses.DeleteProjectTask404(
+                error=f"Project task {kwargs['id']} does not exists"),
+                404)
+
     @action(detail=False, methods=['post'])
     def estimate(self, request, *args, **kwargs):
         # Manage the request to AI server

@@ -73,21 +73,36 @@ class ProjectTaskResponses:
 
     @staticmethod
     def CheckStatusProjectTask200(data="None"):
-        return ProjectTaskResponses.fill_success_responses(message_code=9,  # "Project created successfully",
+        return ProjectTaskResponses.fill_success_responses(message_code=9,
                                                            data=data,
                                                            code=200)
+
     @staticmethod
     def UpdateProjectTask200(data="None"):
-        return ProjectTaskResponses.fill_success_responses(message_code=10,  # "Project created successfully",
+        return ProjectTaskResponses.fill_success_responses(message_code=10,
                                                            data=data,
                                                            code=200)
+
     @staticmethod
     def UpdateProjectTask404(error="None"):
         return ProjectTaskResponses.fill_failed_responses(message_code=11,
                                                           error=error,
                                                           code=404)
+
     @staticmethod
     def UpdateProjectTask400(error="None"):
         return ProjectTaskResponses.fill_failed_responses(message_code=12,
                                                           error=error,
                                                           code=400)
+
+    @staticmethod
+    def DeleteProjectTask200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=13,
+                                                           data=data,
+                                                           code=200)
+
+    @staticmethod
+    def DeleteProjectTask404(error="None"):
+        return ProjectTaskResponses.fill_failed_responses(message_code=14,
+                                                          error=error,
+                                                          code=404)
