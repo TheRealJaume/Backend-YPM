@@ -3,8 +3,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
 
-from tasks.prompts.task.estimation.models import EstimatedTasks
-from tasks.prompts.task.estimation.text import task_estimation_prompt
+from ypm_ai.tasks.prompts.task.estimation.models import EstimatedTasks
+from ypm_ai.tasks.prompts.task.estimation.text import task_estimation_prompt
 
 
 class TaskEstimationManager:

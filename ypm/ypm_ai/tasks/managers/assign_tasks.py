@@ -3,8 +3,8 @@ from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
 
-from tasks.prompts.task.assignment.models import AssignedTasks
-from tasks.prompts.task.assignment.text import task_assignment_prompt
+from ypm_ai.tasks.prompts.task.assignment.models import AssignedTasks
+from ypm_ai.tasks.prompts.task.assignment.text import task_assignment_prompt
 
 
 class TaskAssignmentManager:
@@ -37,4 +37,5 @@ class TaskAssignmentManager:
         result = department_chain.invoke({
             "query": task_prompt
         })
+        print(result)
         return result

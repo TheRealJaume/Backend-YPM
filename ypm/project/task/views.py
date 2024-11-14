@@ -12,7 +12,7 @@ from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer
 from project.task.utils import get_ai_server_request, serialize_project_tasks, \
     save_assignment_in_database, save_estimation_in_database, save_tasks_in_database
 import requests
-from project.tasks import request_project_tasks
+from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
 
 
 class ProjectTaskFilter:
@@ -26,18 +26,10 @@ class TaskViewset(viewsets.ModelViewSet):
     lookup_field = 'id'
     serializer_class = TaskProjectSerializer
     serializer_action_classes = {
-        # "list": TaskListSerializer,
         "update": TaskUpdateSerializer,
-        # "retrieve": RetrieveTaskSerializer,
-        # "create": CreateTaskSerializer,
-        # "info": InfoTaskSerializer,
     }
-    filter_backends = [
-        # UserRoleUserQueryset,
-        ProjectTaskFilter, SearchFilter, OrderingFilter]
-    permission_classes = [
-        # UserPermission,
-        IsAuthenticated]
+    filter_backends = [ProjectTaskFilter, SearchFilter, OrderingFilter]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         try:
@@ -47,8 +39,6 @@ class TaskViewset(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        # Manage the request to AI celery function
-        # request_data = get_ai_server_request(request.data)
         if request.data['action'] == 'create':
             if request.data['target'] == 'project':
                 # Llamar a la tarea de manera asíncrona
@@ -85,41 +75,17 @@ class TaskViewset(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def estimate(self, request, *args, **kwargs):
-        # Manage the request to AI server
-        ai_request = get_ai_server_request(request.data)
-        # Send the request to AI server
-        response = requests.post(ai_request['url'], json=ai_request['data'])
-        # Check if the request to AI server was successful
-        if response.status_code == 200:
-            # Get the response from AI server
-            response_data = response.json()['data']
-            # Save the information in database
-            saved, message = save_estimation_in_database(task_info=response_data)
-            if saved:
-                project = Project.objects.get(id=request.data['project'])
-                serialized_tasks = serialize_project_tasks(project)
-                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
-            else:
-                return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 400)
+        if request.data['action'] == 'estimate':
+            task = request_estimate_project_tasks.delay(request.data['project'])
+        return Response(ProjectTaskResponses.ProjectTasksEstimation200({"task_id": task.id}), 200)
 
     @action(detail=False, methods=['post'])
     def assign(self, request, *args, **kwargs):
-        # Manage the request to AI server
-        ai_request = get_ai_server_request(request.data)
-        # Send the request to AI server
-        response = requests.post(ai_request['url'], json=ai_request['data'])
-        # Check if the request to AI server was successful
-        if response.status_code == 200:
-            # Get the response from AI server
-            response_data = response.json()['data']
-            # Save the information in database
-            saved, message = save_assignment_in_database(task_info=response_data)
-            if saved:
-                project = Project.objects.get(id=request.data['project'])
-                serialized_tasks = serialize_project_tasks(project)
-                return Response(ProjectTaskResponses.ProjectTasksEstimation200(serialized_tasks), 200)
-            else:
-                return Response(ProjectTaskResponses.ProjectTasksEstimation204(), 400)
+        if request.data['action'] == 'assign':
+            task = request_assign_project_tasks.delay(request.data['project'])
+            return Response(ProjectTaskResponses.ProjectTasksAssignment200({"task_id": task.id}), 200)
+        else:
+            return Response(ProjectTaskResponses.ProjectTasksAssignment400(), 400)
 
     @action(detail=False, methods=['post'])
     def task_status(self, request):

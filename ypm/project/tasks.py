@@ -2,8 +2,14 @@ from celery import shared_task
 
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
-from project.task.utils import serialize_project_tasks, save_tasks_in_database
+from project.task.models import ProjectTask
+from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
+from project.task.utils import serialize_project_tasks, save_tasks_in_database, save_assignment_in_database
+from project.workers.models import ProjectWorker
+from project.workers.serializers import AIProjectWorkerSerializer
+from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
 from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
+from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
 
 
 @shared_task
@@ -24,9 +30,41 @@ def request_project_tasks(request_project):
                                      num_subtasks_per_department=1,
                                      excel_file=False)
         task_dict = manager.generate_project_tasks()
-        project = Project.objects.get(id=project.id)
         saved, message = save_tasks_in_database(task_dict, project.id)
         result = serialize_project_tasks(project)
+    except Exception as e:
+        print("Error en la solicitud a AI-YPM:", e)
+    return result
+
+
+@shared_task
+def request_assign_project_tasks(request_project):
+    try:
+        project = Project.objects.get(id=request_project)
+        # Project tasks to be sent
+        project_tasks = ProjectTask.objects.filter(project=project)
+        many = True if project_tasks.count() > 1 else False
+        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
+        tasks = AITaskAssignmentSerializer(project_tasks_data, many=many).data
+        # Project workers to be sent
+        project_workers = ProjectWorker.objects.filter(project=project)
+        many = True if project_workers.count() > 1 else False
+        project_workers_data = project_workers if project_workers.count() > 1 else project_workers.first()
+        workers = AIProjectWorkerSerializer(project_workers_data, many=many).data
+        manager = TaskAssignmentManager(project_tasks=tasks, project_workers=workers,
+                                        excel_file=False)
+        assigend_task_dict = manager.assign_project_tasks()
+        saved, message = save_assignment_in_database(assigend_task_dict)
+        result = serialize_project_tasks(project)
+    except Exception as e:
+        print("Error en la solicitud a AI-YPM:", e)
+    return result
+
+
+@shared_task
+def request_estimate_project_tasks(request_project):
+    try:
+        result = "A"
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)
     return result
