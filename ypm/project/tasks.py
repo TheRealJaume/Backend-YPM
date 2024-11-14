@@ -4,7 +4,8 @@ from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
 from project.task.models import ProjectTask
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
-from project.task.utils import serialize_project_tasks, save_tasks_in_database, save_assignment_in_database
+from project.task.utils import serialize_project_tasks, save_tasks_in_database, save_assignment_in_database, \
+    save_estimation_in_database
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
 from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
@@ -64,7 +65,16 @@ def request_assign_project_tasks(request_project):
 @shared_task
 def request_estimate_project_tasks(request_project):
     try:
-        result = "A"
+        project = Project.objects.get(id=request_project)
+        project_tasks = ProjectTask.objects.filter(project=project)
+        many = True if project_tasks.count() > 1 else False
+        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
+        data = AITaskEstimationSerializer(project_tasks_data, many=many).data
+        manager = TaskEstimationManager(project_tasks=data,
+                                        excel_file=False)
+        estimated_tasks = manager.estimate_project_tasks()
+        saved, message = save_estimation_in_database(estimated_tasks)
+        result = serialize_project_tasks(project)
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)
     return result

@@ -74,18 +74,18 @@ class TaskViewset(viewsets.ModelViewSet):
                 404)
 
     @action(detail=False, methods=['post'])
-    def estimate(self, request, *args, **kwargs):
-        if request.data['action'] == 'estimate':
-            task = request_estimate_project_tasks.delay(request.data['project'])
-        return Response(ProjectTaskResponses.ProjectTasksEstimation200({"task_id": task.id}), 200)
-
-    @action(detail=False, methods=['post'])
     def assign(self, request, *args, **kwargs):
         if request.data['action'] == 'assign':
             task = request_assign_project_tasks.delay(request.data['project'])
             return Response(ProjectTaskResponses.ProjectTasksAssignment200({"task_id": task.id}), 200)
         else:
             return Response(ProjectTaskResponses.ProjectTasksAssignment400(), 400)
+
+    @action(detail=False, methods=['post'])
+    def estimate(self, request, *args, **kwargs):
+        if request.data['action'] == 'estimate':
+            task = request_estimate_project_tasks.delay(request.data['project'])
+        return Response(ProjectTaskResponses.ProjectTasksEstimation200({"task_id": task.id}), 200)
 
     @action(detail=False, methods=['post'])
     def task_status(self, request):
