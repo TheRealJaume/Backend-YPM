@@ -220,3 +220,9 @@ AI_SERVER_URL = os.getenv('AI_SERVER_URL')
 # CELERY
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+
+
+# STATIC
+STATIC_ROOT = "./var/www/myproject/static"
+STATIC_URL = "/static/"
+
