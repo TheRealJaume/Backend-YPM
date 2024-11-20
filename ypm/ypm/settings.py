@@ -226,3 +226,9 @@ CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 STATIC_ROOT = "./var/www/myproject/static"
 STATIC_URL = "/static/"
 
+# ASSEMBLY
+ASSEMBLYAI_API_KEY = os.getenv('ASSEMBLYAI_API_KEY')
+
+# MEDIA CONFIG
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

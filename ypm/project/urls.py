@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from project.departments.views import ProjectDepartmentViewset
 from project.jira.views import ProjectJiraViewset
 from project.projects.views import ProjectViewset, ProjectRequirementViewset
+from project.sprints.views import ProjectSprintViewset
 from project.task.views import TaskViewset
 from project.technologies.views import ProjectTechnologyViewset
 from project.workers.views import ProjectWorkerViewset
@@ -17,6 +18,7 @@ router.register('project-worker',  ProjectWorkerViewset, basename='project-worke
 router.register('project-department',  ProjectDepartmentViewset, basename='project-department')
 router.register('project-task',  TaskViewset, basename='project-task')
 router.register('project-jira',  ProjectJiraViewset, basename='project-jira')
+router.register('project-sprint',  ProjectSprintViewset, basename='project-sprint')
 
 
 # The API URLs are now determined automatically by the router.

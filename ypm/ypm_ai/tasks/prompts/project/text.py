@@ -22,3 +22,15 @@ def department_task_prompt():
 def department_phase_prompt():
     prompt_1 = "Eres un experto en gestión de proyectos. Asumiendo el rol de {department} en la fase {phase},"
     return prompt_1
+
+
+# REQUIREMENTS
+def summarize_requirements_prompt(requirements_text):
+    prompt_1 = "Eres un experto en gestión de proyectos, para ello tomarás la información necesaria de todas tus fuentes" \
+               "de información para determinar cuales son los puntos clave a tener el cuenta para el correcto desarrollo" \
+               "del proyecto. Este proyecto viene definido a partir de una reunión entre el cliente y la empresa que lo" \
+               "desarrolla. A continuación, te envío un texto de esta reunión donde vienen identificados cada uno de los" \
+               "presentes en la conversación. El resultado debe ser una lista de requerimientos basados en la conversacion" \
+               "que te voy a enviar. {requirements_text}"
+    prompt_1 = prompt_1.format(requirements_text=requirements_text)
+    return prompt_1

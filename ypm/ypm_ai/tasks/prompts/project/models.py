@@ -11,7 +11,6 @@ class Phase(BaseModel):
     tasks: list[Task] = Field(description="the list of the tasks corresponding to this phase")
 
 
-# Define your desired data structure.
 class DepartmentTask(BaseModel):
     department: str = Field(description="the department name")
     phases: list[Phase] = Field(description="the list of the phases")
@@ -20,3 +19,13 @@ class DepartmentTask(BaseModel):
 class CompanyTask(BaseModel):
     name: str = Field(description="The company name")
     departments: list[DepartmentTask] = Field(description="The list of the departments")
+
+
+# REQUIREMENTS
+class ProjectRequirement(BaseModel):
+    requirement: str = Field(description="The definition of the requirement extracted from the meeting")
+
+
+class ProjectRequirements(BaseModel):
+    requirements: list[ProjectRequirement] = Field(
+        description="The definition of the requirement extracted from the meeting")

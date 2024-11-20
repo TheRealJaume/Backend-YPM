@@ -1,6 +1,7 @@
 from django.db import transaction
 
 from project.projects.models import ProjectRequirement
+from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 
 
 def get_jira_project(project_name, connection):

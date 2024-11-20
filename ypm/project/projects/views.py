@@ -1,6 +1,11 @@
-import requests
-from django.db import transaction
+# DJANGO
+import os
 
+from celery.result import AsyncResult
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from django.db import transaction
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
@@ -12,8 +17,11 @@ from project.projects.models import Project, ProjectRequirement
 from project.projects.responses import ProjectResponses, ProjectRequirementResponses
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
     CreateProjectSerializer, InfoProjectSerializer, ProjectRequirementSerializer
-from project.projects.utils import save_requirements_in_database
-from project.task.utils import serialize_project_tasks, get_ai_server_request
+from project.task.utils import serialize_project_tasks
+from project.tasks import get_requirements_from_audio
+
+# AI
+from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 
 
 class UserFilterQueryset:
@@ -109,29 +117,59 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
         except (KeyError, AttributeError):
             super().get_serializer_class()
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
-        data = request.data
-        print(data)
-        # Manage the request to AI server (Transcribe audio)
-        transcribe_request = get_ai_server_request(request.data)
-        # Send the request to AI server
-        transcribe_response = requests.post(url=transcribe_request['url'], files={'file': transcribe_request['data']})
-        if transcribe_response.status_code == 200:
-            # Manage the request to AI server (Get list of requirements)
-            requirements_data = {"text": transcribe_response.json()['data'], "action": "summarize"}
-            ai_request = get_ai_server_request(requirements_data)
-            # Send the request to AI server
-            requirements_response = requests.post(url=ai_request['url'], json=ai_request['data'])
-            if requirements_response.status_code == 200:
-                # Save the requirements in the database
-                requirements = requirements_response.json()['data']
-                project = Project.objects.get(id=request.data['project'])
-                saved, message = save_requirements_in_database(requirements=requirements, project=project)
-                if saved:
-                    project_requirements = ProjectRequirement.objects.filter(project=project)
-                    many = True if project_requirements.count() > 1 else False
-                    data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
-                    serialized_requirements = ProjectRequirementSerializer(data, many=many)
-                    return Response(
-                        ProjectRequirementResponses.CreateProjectRequirements200(serialized_requirements.data), 200)
+        try:
+            # Temporary solution to store the requirements audio file
+            file_path = default_storage.save(f"{request.data['file'].name}", ContentFile(request.data['file'].read()))
+            # Generar una URL para el archivo (local o en S3)
+            file_url = f"./media/{file_path}"
+            task = get_requirements_from_audio.delay(file_path=file_url, project=request.data['project'])
+            return Response(
+                ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)
+        except Exception as e:
+            return Response(ProjectRequirementResponses.CreateProjectRequirements400(error=str(e)), 400)
+
+    @action(detail=False, methods=['post'])
+    def requirements_status(self, request):
+        task_id = request.data['requirement_id']
+        result = AsyncResult(task_id)
+
+        # Verificar el estado y obtener información
+        if isinstance(result.info, dict):
+            progress = result.info.get("progress")
+            message = result.info.get("message")
+            file_path = result.info.get("file_path")  # Obtener la ruta del archivo
+            data = result.info.get("data")  # Obtener la lista (si existe)
+        else:
+            progress = None
+            message = None
+            file_path = None
+            data = None
+
+        # Procesar `data` si es una lista
+        processed_data = None
+        if isinstance(data, list):
+            # Procesa la lista (opcional)
+            processed_data = [{"requirement": item.get("requirement")} for item in data if "requirement" in item]
+        elif data:
+            # Si `data` no es una lista pero existe, úsala directamente
+            processed_data = data
+
+        # Eliminar el archivo si la tarea está completa
+        if result.status in ["SUCCESS", "FAILURE"] and file_path:
+            full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            if os.path.exists(full_file_path):
+                os.remove(full_file_path)
+                print(f"Archivo eliminado: {full_file_path}")
+
+        # Respuesta
+        response_data = {
+            "requirement_id": task_id,
+            "status": result.status,
+            "progress": progress,
+            "message": message,
+            "result": processed_data if result.status == "SUCCESS" else None,
+        }
+        return Response(ProjectRequirementResponses.CheckStatusTranscription200(response_data), 200)
+
+

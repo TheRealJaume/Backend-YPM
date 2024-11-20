@@ -3,6 +3,7 @@ from project.departments.models import ProjectDepartment
 from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
+from project.sprints.models import ProjectSprint
 from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer, \
     ProjectTaskWorkerSerializer
@@ -126,6 +127,24 @@ def save_estimation_in_database(task_info):
         return False, str(e)
 
 
+def save_organization_in_database(sprint_info, project):
+    """
+    This function is used to save the sprints in the database.
+    """
+    try:
+        for sprint in sprint_info['sprint']:
+            project_sprint = ProjectSprint(name=sprint['name'], description=sprint['target'], time=sprint['time'],
+                                           project=project)
+            project_sprint.save()
+            for task in sprint['tasks']:
+                project_task = ProjectTask.objects.get(id=task['task_id'])
+                project_task.sprint = project_sprint
+                project_task.save()
+        return True, "OK"
+    except Exception as e:
+        return False, str(e)
+
+
 def serialize_project_tasks(project):
     project_departments = ProjectDepartment.objects.filter(project=project)
     phases = ProjectPhase.objects.filter(project=project)
@@ -150,4 +169,25 @@ def serialize_project_tasks(project):
                 phase_dict["tasks"].append(task_dict)
             department_dict["phases"].append(phase_dict)
         project_dict["departments"].append(department_dict)
+    return project_dict
+
+
+def serialize_sprint_tasks(project):
+    project_tasks = ProjectTask.objects.filter(project=project)
+    project_sprints = ProjectSprint.objects.filter(project=project)
+    project_dict = {"project": project.name, "sprints": []}
+    for sprint in project_sprints:
+        sprint_dict = {"id": str(sprint.id), "name": sprint.name, "description": sprint.description,
+                       "time": sprint.time, "tasks": []}
+        sprint_tasks = project_tasks.filter(sprint=sprint)
+        for sprint_task in sprint_tasks:
+                task_dict = {"id": str(sprint_task.id), "name": sprint_task.name, "description": sprint_task.description, "time": sprint_task.time}
+                task_workers = ProjectTaskWorker.objects.filter(task=sprint_task)
+                if task_workers.count() > 0:
+                    task_workers_data = task_workers if task_workers.count() > 1 else task_workers.first()
+                    many = True if task_workers.count() > 1 else False
+                    worker_dict = ProjectTaskWorkerSerializer(task_workers_data, many=many)
+                    task_dict["workers"] = [worker_dict.data]
+                sprint_dict["tasks"].append(task_dict)
+        project_dict["sprints"].append(sprint_dict)
     return project_dict

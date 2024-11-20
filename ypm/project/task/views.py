@@ -5,13 +5,9 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from project.projects.models import Project
 from project.task.models import ProjectTask
 from project.task.responses import ProjectTaskResponses
 from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer
-from project.task.utils import get_ai_server_request, serialize_project_tasks, \
-    save_assignment_in_database, save_estimation_in_database, save_tasks_in_database
-import requests
 from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
 
 

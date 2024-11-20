@@ -85,3 +85,28 @@ class ProjectRequirementResponses:
         return ProjectRequirementResponses.fill_success_responses(message_code=1,  # "Project created successfully",
                                                                   data=data,
                                                                   code=200)
+
+    @staticmethod
+    def CreateProjectRequirements400(error="None"):
+        return ProjectRequirementResponses.fill_failed_responses(message_code=2,
+                                                                 # "Data sent is not valid to create a Project",
+                                                                 error=error,
+                                                                 code=400)
+    @staticmethod
+    def TranscriptProjectRequirements200(data=None):
+        return ProjectRequirementResponses.fill_success_responses(message_code=4,  # "Project created successfully",
+                                                                  data=data,
+                                                                  code=200)
+
+    @staticmethod
+    def CheckStatusTranscription200(data=None):
+        return ProjectRequirementResponses.fill_success_responses(message_code=5,  # "Project created successfully",
+                                                                  data=data,
+                                                                  code=200)
+
+    @staticmethod
+    def TranscriptProjectRequirements400(error="None"):
+        return ProjectRequirementResponses.fill_failed_responses(message_code=6,
+                                                                 # "Data sent is not valid to create a Project",
+                                                                 error=error,
+                                                                 code=400)
