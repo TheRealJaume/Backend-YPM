@@ -1,12 +1,16 @@
 # DJANGO
 import os
 
+from django.http import HttpResponse
+from openpyxl import Workbook
+from io import BytesIO
 from celery.result import AsyncResult
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db import transaction
-from rest_framework import viewsets
+from django.utils.timezone import now
+from rest_framework import viewsets, status
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,6 +21,8 @@ from project.projects.models import Project, ProjectRequirement
 from project.projects.responses import ProjectResponses, ProjectRequirementResponses
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
     CreateProjectSerializer, InfoProjectSerializer, ProjectRequirementSerializer
+from project.sprints.models import ProjectSprint
+from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.utils import serialize_project_tasks
 from project.tasks import get_requirements_from_audio
 
@@ -91,6 +97,53 @@ class ProjectViewset(viewsets.ModelViewSet):
                 return Response(ProjectResponses.ProjectTasks204(), 204)
             serialized_tasks = serialize_project_tasks(project)
             return Response(ProjectResponses.ProjectTasks200(serialized_tasks), 200)
+
+    @action(detail=False, methods=['post'])
+    def export_excel(self, request):
+        try:
+            # Obtain the project and its sprints
+            project = Project.objects.get(id=request.data['project'])
+            sprints = ProjectSprint.objects.filter(project=project).order_by('start_date')
+
+            # Create the Excel file
+            wb = Workbook()
+            ws = wb.active
+            ws.title = f"Project {project.name}"
+
+            # Write headers
+            headers = ['Sprint', 'Task', 'Description', 'Estimation (h)', 'Department', 'Assigned To']
+            for col_num, header in enumerate(headers, 1):
+                ws.cell(row=1, column=col_num, value=header)
+
+            # Write tasks organized by sprints
+            row = 2
+            for sprint in sprints:
+                tasks = ProjectTask.objects.filter(sprint=sprint)
+                for task in tasks:
+                    worker = ProjectTaskWorker.objects.filter(task=task)
+                    ws.cell(row=row, column=1, value=sprint.name)
+                    ws.cell(row=row, column=2, value=task.name)
+                    ws.cell(row=row, column=3, value=task.description)
+                    ws.cell(row=row, column=4, value=task.time)
+                    ws.cell(row=row, column=5, value=task.department.department.name)
+                    ws.cell(row=row, column=6, value=worker.first().worker.first_name if worker.count() > 0 else 'Unassigned')
+                    row += 1
+
+            # Save the Excel file to memory
+            excel_file = BytesIO()
+            wb.save(excel_file)
+            excel_file.seek(0)
+
+            # Prepare the response
+            response = HttpResponse(
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            )
+            filename = f"project_{project.id}_tasks_{now().strftime('%Y%m%d%H%M%S')}.xlsx"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            wb.save(response)
+            return response
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ProjectRequirementViewset(viewsets.ModelViewSet):
@@ -171,5 +224,3 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             "result": processed_data if result.status == "SUCCESS" else None,
         }
         return Response(ProjectRequirementResponses.CheckStatusTranscription200(response_data), 200)
-
-

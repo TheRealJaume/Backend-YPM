@@ -3,6 +3,7 @@ from project.departments.models import ProjectDepartment
 from project.phases.models import ProjectPhase
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
+from project.sprints.managers.v0_sprint_manager import SprintManagerV0
 from project.sprints.models import ProjectSprint
 from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer, \
@@ -131,15 +132,28 @@ def save_organization_in_database(sprint_info, project):
     """
     This function is used to save the sprints in the database.
     """
+    sprint_manager = SprintManagerV0(project)
+    sprint_start_date = project.init_date
     try:
         for sprint in sprint_info['sprint']:
-            project_sprint = ProjectSprint(name=sprint['name'], description=sprint['target'], time=sprint['time'],
-                                           project=project)
+            project_sprint = ProjectSprint(name=sprint['name'], description=sprint['target'], project=project)
             project_sprint.save()
-            for task in sprint['tasks']:
-                project_task = ProjectTask.objects.get(id=task['task_id'])
-                project_task.sprint = project_sprint
-                project_task.save()
+            # Obtenemos los ids de tareas que pertenecen al sprint
+            task_ids = [task['task_id'] for task in sprint['tasks']]
+            sprint_tasks = ProjectTask.objects.filter(id__in=task_ids)
+            # Asignamos el sprint a las tareas que pertenecen al sprint
+            sprint_tasks.update(sprint=project_sprint)
+            # Obtenemos la fecha fin del sprint a través del manager
+            sprint_time, sprint_end_date = sprint_manager.get_sprint_end_date(sprint=project_sprint, start_date=sprint_start_date)
+            project_sprint.end_date = sprint_end_date
+            project_sprint.start_date = sprint_start_date
+            project_sprint.time = sprint_time
+            project_sprint.save()
+            # Asignamos la fecha fin de un sprint al inicio del siguiente sprint
+            sprint_start_date = sprint_end_date
+        # Guardarmos como fecha fin del proyecto la fecha fin del ultimo sprint
+        project.end_date = sprint_end_date
+        project.save()
         return True, "OK"
     except Exception as e:
         return False, str(e)
@@ -181,13 +195,14 @@ def serialize_sprint_tasks(project):
                        "time": sprint.time, "tasks": []}
         sprint_tasks = project_tasks.filter(sprint=sprint)
         for sprint_task in sprint_tasks:
-                task_dict = {"id": str(sprint_task.id), "name": sprint_task.name, "description": sprint_task.description, "time": sprint_task.time}
-                task_workers = ProjectTaskWorker.objects.filter(task=sprint_task)
-                if task_workers.count() > 0:
-                    task_workers_data = task_workers if task_workers.count() > 1 else task_workers.first()
-                    many = True if task_workers.count() > 1 else False
-                    worker_dict = ProjectTaskWorkerSerializer(task_workers_data, many=many)
-                    task_dict["workers"] = [worker_dict.data]
-                sprint_dict["tasks"].append(task_dict)
+            task_dict = {"id": str(sprint_task.id), "name": sprint_task.name, "description": sprint_task.description,
+                         "time": sprint_task.time}
+            task_workers = ProjectTaskWorker.objects.filter(task=sprint_task)
+            if task_workers.count() > 0:
+                task_workers_data = task_workers if task_workers.count() > 1 else task_workers.first()
+                many = True if task_workers.count() > 1 else False
+                worker_dict = ProjectTaskWorkerSerializer(task_workers_data, many=many)
+                task_dict["workers"] = [worker_dict.data]
+            sprint_dict["tasks"].append(task_dict)
         project_dict["sprints"].append(sprint_dict)
     return project_dict

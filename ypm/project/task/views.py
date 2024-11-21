@@ -92,3 +92,4 @@ class TaskViewset(viewsets.ModelViewSet):
             "result": result.result if result.status == "SUCCESS" else None
         }
         return Response(ProjectTaskResponses.CheckStatusProjectTask200(response_data), 200)
+

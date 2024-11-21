@@ -58,6 +58,11 @@ class ProjectResponses:
                                                       error=error,
                                                       code=204)
 
+    @staticmethod
+    def ExportExcelProject200(data="None"):
+        return ProjectResponses.fill_success_responses(message_code=5,  # "Project created successfully",
+                                                       data=data,
+                                                       code=200)
 
 # PROJECT REQUIREMENT
 class ProjectRequirementResponses:

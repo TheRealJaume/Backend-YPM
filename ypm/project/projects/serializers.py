@@ -32,7 +32,7 @@ class CreateProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "company"]
+        fields = ["name", "description", "company", "init_date"]
 
     def validate(self, data):
         # TODO: Check if the department is already associated to this project.
@@ -40,6 +40,7 @@ class CreateProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         project = Project(name=validated_data['name'], description=validated_data['description'],
+                          init_date=validated_data['start_date'],
                           company=Company.objects.get(id=validated_data['company']))
         project.save()
         return project
