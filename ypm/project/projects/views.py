@@ -175,8 +175,7 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             # Temporary solution to store the requirements audio file
             file_path = default_storage.save(f"{request.data['file'].name}", ContentFile(request.data['file'].read()))
             # Generar una URL para el archivo (local o en S3)
-            file_url = f"./media/{file_path}"
-            task = get_requirements_from_audio.delay(file_path=file_url, project=request.data['project'])
+            task = get_requirements_from_audio.delay(file_path=file_path, project=request.data['project'])
             return Response(
                 ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)
         except Exception as e:
@@ -210,7 +209,8 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
 
         # Eliminar el archivo si la tarea está completa
         if result.status in ["SUCCESS", "FAILURE"] and file_path:
-            full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            normalized_file_path = os.path.normpath(file_path.lstrip('./'))
+            full_file_path = os.path.join(settings.MEDIA_ROOT, normalized_file_path)
             if os.path.exists(full_file_path):
                 os.remove(full_file_path)
                 print(f"Archivo eliminado: {full_file_path}")

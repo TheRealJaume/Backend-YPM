@@ -24,7 +24,7 @@ class RequirementsManager:
         )
 
         transcriber = aai.Transcriber(config=config)
-        transcript = transcriber.transcribe(file_url)
+        transcript = transcriber.transcribe(f"./media/{file_url}")
 
         if transcript.status == aai.TranscriptStatus.error:
             raise Exception(transcript.error)

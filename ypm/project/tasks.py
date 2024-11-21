@@ -112,9 +112,14 @@ def get_requirements_from_audio(file_path, project):
             current_task.update_state(state="FAILURE",
                                       meta={"error": "Failed to save requirements", "file_path": file_path})
     except Exception as e:
-        current_task.update_state(state="FAILURE",
-                                  meta={"error": "Failed to process requirements", "file_path": file_path})
-        print("Error en la solicitud a AI-YPM:", e)
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__,
+                "file_path": file_path,
+            }
+        )
 
 
 @shared_task
