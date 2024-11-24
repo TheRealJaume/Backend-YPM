@@ -2,6 +2,7 @@ import requests
 
 from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import login
+from django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, action
@@ -145,7 +146,7 @@ def google_logout(request):
 
 @api_view(['POST'])
 def refresh_token(request):
-    refresh_token = request.data.get('refresh')
+    refresh_token = request.data.get('refreshToken')
 
     if not refresh_token:
         return Response({'error': 'Refresh token no proporcionado'}, status=status.HTTP_400_BAD_REQUEST)
@@ -155,7 +156,9 @@ def refresh_token(request):
         token = RefreshToken(refresh_token)
 
         # Verifica si el refresh token está expirado
-        if token.is_expired():
+        # Verifica si el refresh token está expirado manualmente
+        expiration_time = token.payload.get('exp')
+        if expiration_time and now().timestamp() > expiration_time:
             return Response({'error': 'Refresh token expirado'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Genera un nuevo access token

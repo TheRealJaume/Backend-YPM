@@ -25,6 +25,17 @@ class TaskUpdateSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description']
 
 
+# LIST
+class TaskListSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders all the information from the ProjectTask model
+    """
+
+    class Meta:
+        model = ProjectTask
+        fields = ['id', 'name', 'description']
+
+
 # ESTIMATE TASK
 class AITaskEstimationSerializer(serializers.ModelSerializer):
     """

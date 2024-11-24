@@ -14,7 +14,7 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('login/google', google_login, name='google_login'),
     path('logout', google_logout, name='google_logout'),
-    path('auth/token/refresh/', refresh_token, name='refresh_token'),
+    path('token/refresh/', refresh_token, name='refresh_token'),
     path('onboarding/', onboarding, name='onboarding'),
     # company
     path('', include(company_urls), name='company'),

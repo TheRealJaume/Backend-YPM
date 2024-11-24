@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from project.task.models import ProjectTask
 from project.task.responses import ProjectTaskResponses
-from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer
+from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer, TaskListSerializer
 from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
 
 
@@ -23,6 +23,7 @@ class TaskViewset(viewsets.ModelViewSet):
     serializer_class = TaskProjectSerializer
     serializer_action_classes = {
         "update": TaskUpdateSerializer,
+        "list": TaskListSerializer
     }
     filter_backends = [ProjectTaskFilter, SearchFilter, OrderingFilter]
     permission_classes = [IsAuthenticated]
@@ -92,4 +93,3 @@ class TaskViewset(viewsets.ModelViewSet):
             "result": result.result if result.status == "SUCCESS" else None
         }
         return Response(ProjectTaskResponses.CheckStatusProjectTask200(response_data), 200)
-
