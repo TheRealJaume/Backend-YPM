@@ -17,17 +17,14 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 # PROJECT
-from project.projects.models import Project, ProjectRequirement
-from project.projects.responses import ProjectResponses, ProjectRequirementResponses
+from project.projects.models import Project
+from project.projects.responses import ProjectResponses
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
-    CreateProjectSerializer, InfoProjectSerializer, ProjectRequirementSerializer
+    CreateProjectSerializer, InfoProjectSerializer
 from project.sprints.models import ProjectSprint
 from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.utils import serialize_project_tasks
-from project.tasks import get_requirements_from_audio
 
-# AI
-from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 
 
 class UserFilterQueryset:
@@ -126,7 +123,8 @@ class ProjectViewset(viewsets.ModelViewSet):
                     ws.cell(row=row, column=3, value=task.description)
                     ws.cell(row=row, column=4, value=task.time)
                     ws.cell(row=row, column=5, value=task.department.department.name)
-                    ws.cell(row=row, column=6, value=worker.first().worker.first_name if worker.count() > 0 else 'Unassigned')
+                    ws.cell(row=row, column=6,
+                            value=worker.first().worker.first_name if worker.count() > 0 else 'Unassigned')
                     row += 1
 
             # Save the Excel file to memory
@@ -144,83 +142,3 @@ class ProjectViewset(viewsets.ModelViewSet):
             return response
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class ProjectRequirementViewset(viewsets.ModelViewSet):
-    queryset = ProjectRequirement.objects.all()
-    lookup_field = 'id'
-    serializer_class = ProjectRequirementSerializer
-    serializer_action_classes = {
-        # "list": ProjectListSerializer,
-        # "update": ProjectUpdateSerializer,
-        # "retrieve": RetrieveProjectSerializer,
-        # "create": CreateProjectSerializer,
-        # "info": InfoProjectSerializer,
-    }
-    filter_backends = [
-        # UserRoleUserQueryset,
-        SearchFilter, OrderingFilter]
-    permission_classes = [
-        # UserPermission,
-        IsAuthenticated]
-
-    def get_serializer_class(self):
-        try:
-            return self.serializer_action_classes[self.action]
-        except (KeyError, AttributeError):
-            super().get_serializer_class()
-
-    def create(self, request, *args, **kwargs):
-        try:
-            # Temporary solution to store the requirements audio file
-            file_path = default_storage.save(f"{request.data['file'].name}", ContentFile(request.data['file'].read()))
-            # Generar una URL para el archivo (local o en S3)
-            task = get_requirements_from_audio.delay(file_path=file_path, project=request.data['project'])
-            return Response(
-                ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)
-        except Exception as e:
-            return Response(ProjectRequirementResponses.CreateProjectRequirements400(error=str(e)), 400)
-
-    @action(detail=False, methods=['post'])
-    def requirements_status(self, request):
-        task_id = request.data['requirement_id']
-        result = AsyncResult(task_id)
-
-        # Verificar el estado y obtener información
-        if isinstance(result.info, dict):
-            progress = result.info.get("progress")
-            message = result.info.get("message")
-            file_path = result.info.get("file_path")  # Obtener la ruta del archivo
-            data = result.info.get("data")  # Obtener la lista (si existe)
-        else:
-            progress = None
-            message = None
-            file_path = None
-            data = None
-
-        # Procesar `data` si es una lista
-        processed_data = None
-        if isinstance(data, list):
-            # Procesa la lista (opcional)
-            processed_data = [{"requirement": item.get("requirement")} for item in data if "requirement" in item]
-        elif data:
-            # Si `data` no es una lista pero existe, úsala directamente
-            processed_data = data
-
-        # Eliminar el archivo si la tarea está completa
-        if result.status in ["SUCCESS", "FAILURE"] and file_path:
-            normalized_file_path = os.path.normpath(file_path.lstrip('./'))
-            full_file_path = os.path.join(settings.MEDIA_ROOT, normalized_file_path)
-            if os.path.exists(full_file_path):
-                os.remove(full_file_path)
-                print(f"Archivo eliminado: {full_file_path}")
-
-        # Respuesta
-        response_data = {
-            "requirement_id": task_id,
-            "status": result.status,
-            "progress": progress,
-            "message": message,
-            "result": processed_data if result.status == "SUCCESS" else None,
-        }
-        return Response(ProjectRequirementResponses.CheckStatusTranscription200(response_data), 200)

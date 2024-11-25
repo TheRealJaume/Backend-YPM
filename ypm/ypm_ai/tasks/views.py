@@ -1,17 +1,14 @@
-from django.db import transaction
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
-from tasks.managers.assign_tasks import TaskAssignmentManager
-from tasks.managers.create_tasks import ProjectTaskManager
-
-from tasks.managers.estimate_tasks import TaskEstimationManager
-from tasks.models import ProjectTask
-from tasks.responses import TaskResponses
-from tasks.serializers import TaskSerializer
+from project.task.models import ProjectTask
+from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
+from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
+from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
+from ypm_ai.tasks.responses import TaskResponses
+from ypm_ai.tasks.serializers import TaskSerializer
 
 
 class TaskViewset(viewsets.ModelViewSet):

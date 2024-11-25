@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 
-
 class Task(BaseModel):
     task_name: str = Field(description="the task name")
     task_description: str = Field(description="the task description")
@@ -28,4 +27,8 @@ class ProjectRequirement(BaseModel):
 
 class ProjectRequirements(BaseModel):
     requirements: list[ProjectRequirement] = Field(
+        description="The definition of the requirement extracted from the meeting")
+
+class RequirementsFromText(BaseModel):
+    requirements: list[str] = Field(
         description="The definition of the requirement extracted from the meeting")

@@ -36,7 +36,8 @@ class ProjectTaskManager:
                                           project_definition=self.project_definition,
                                           project_technologies=self.project_technologies,
                                           project_departments=self.project_departments,
-                                          project_requirements=self.project_requirements)
+                                          project_requirements=self.project_requirements,
+                                          num_tasks_per_department=self.num_tasks_per_department)
 
         # Set up a parser + inject instructions into the prompt template.
         parser = JsonOutputParser(pydantic_object=CompanyTask)

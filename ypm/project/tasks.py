@@ -1,8 +1,10 @@
 from celery import shared_task, current_task
 
-from project.projects.models import Project, ProjectRequirement
-from project.projects.serializers import AITaskProjectSerializer, ProjectRequirementSerializer
-from project.projects.utils import save_requirements_in_database
+from project.projects.models import Project
+from project.projects.serializers import AITaskProjectSerializer
+from project.projects.utils import save_requirements_in_database, save_requirements_from_text_file
+from project.requirements.models import ProjectRequirement
+from project.requirements.serializers import ProjectRequirementSerializer
 from project.sprints.serializers import AITaskOrganizationSerializer
 from project.task.models import ProjectTask
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
@@ -30,9 +32,9 @@ def request_project_tasks(request_project):
                                      project_departments=", ".join(
                                          [item['name'] for item in data['departments']]),
                                      project_requirements=data['requirements'],
-                                     num_tasks_per_department=1,
-                                     num_tasks_per_phase=1,
-                                     num_subtasks_per_department=1,
+                                     num_tasks_per_department=10,
+                                     num_tasks_per_phase=10,
+                                     num_subtasks_per_department=10,
                                      excel_file=False)
         task_dict = manager.generate_project_tasks()
         saved, message = save_tasks_in_database(task_dict, project.id)
@@ -85,6 +87,24 @@ def request_estimate_project_tasks(request_project):
 
 
 @shared_task
+def request_organize_project_tasks(request_project):
+    try:
+        project = Project.objects.get(id=request_project)
+        project_tasks = ProjectTask.objects.filter(project=project)
+        many = True if project_tasks.count() > 1 else False
+        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
+        data = AITaskOrganizationSerializer(project_tasks_data, many=many).data
+        manager = TaskOrganizationManager(project_tasks=data,
+                                          excel_file=False)
+        estimated_tasks = manager.organize_project_tasks()
+        saved, message = save_organization_in_database(estimated_tasks, project)
+        result = serialize_sprint_tasks(project)
+    except Exception as e:
+        print("Error en la solicitud a AI-YPM:", e)
+    return result
+
+
+@shared_task
 def get_requirements_from_audio(file_path, project):
     try:
         # Paso 1: Transcribir el audio
@@ -123,18 +143,34 @@ def get_requirements_from_audio(file_path, project):
 
 
 @shared_task
-def request_organize_project_tasks(request_project):
+def get_requirements_from_text(file_path, project):
     try:
-        project = Project.objects.get(id=request_project)
-        project_tasks = ProjectTask.objects.filter(project=project)
-        many = True if project_tasks.count() > 1 else False
-        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
-        data = AITaskOrganizationSerializer(project_tasks_data, many=many).data
-        manager = TaskOrganizationManager(project_tasks=data,
-                                          excel_file=False)
-        estimated_tasks = manager.organize_project_tasks()
-        saved, message = save_organization_in_database(estimated_tasks, project)
-        result = serialize_sprint_tasks(project)
+        # Paso 1: Transcribir el audio
+        current_task.update_state(state="PROGRESS", meta={"progress": 20, "message": "Uploading document ..."})
+        text_manager = RequirementsManager(text_file=file_path)
+        requirements = text_manager.get_requirements_from_text()
+        project = Project.objects.get(id=project)
+        # Paso 2: Guardando en bbdd
+        current_task.update_state(state="PROGRESS", meta={"progress": 50, "message": "Saving requirements in database ..."})
+        saved, message = save_requirements_from_text_file(requirements=requirements, project=project)
+        if saved:
+            project_requirements = ProjectRequirement.objects.filter(project=project)
+            many = True if project_requirements.count() > 1 else False
+            data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
+            serialized_requirements = ProjectRequirementSerializer(data, many=many)
+            current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Task completed",
+                                                             "data": serialized_requirements.data,
+                                                             "file_path": file_path})
+        else:
+            current_task.update_state(state="FAILURE",
+                                      meta={"error": "Failed to save requirements", "file_path": file_path})
     except Exception as e:
-        print("Error en la solicitud a AI-YPM:", e)
-    return result
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__,
+                "file_path": file_path,
+            }
+        )
+

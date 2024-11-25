@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 
 from project.departments.views import ProjectDepartmentViewset
 from project.jira.views import ProjectJiraViewset
-from project.projects.views import ProjectViewset, ProjectRequirementViewset
+from project.projects.views import ProjectViewset
+from project.requirements.views import ProjectRequirementViewset
 from project.sprints.views import ProjectSprintViewset
 from project.task.views import TaskViewset
 from project.technologies.views import ProjectTechnologyViewset

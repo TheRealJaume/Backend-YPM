@@ -1,7 +1,7 @@
 from django.db import transaction
+import json
 
-from project.projects.models import ProjectRequirement
-from ypm_ai.tasks.managers.project_requirements import RequirementsManager
+from project.requirements.models import ProjectRequirement
 
 
 def get_jira_project(project_name, connection):
@@ -18,6 +18,18 @@ def save_requirements_in_database(requirements, project):
     try:
         for requirement in requirements['requirements']:
             requirement = ProjectRequirement(requirement=requirement['requirement'], project=project)
+            requirement.save()
+        return True, "OK"
+    except Exception as e:
+        return False, str(e)
+
+
+@transaction.atomic
+def save_requirements_from_text_file(requirements, project):
+    try:
+        requirements_list = json.loads(requirements)['requirements']
+        for requirement in requirements_list:
+            requirement = ProjectRequirement(requirement=requirement, project=project)
             requirement.save()
         return True, "OK"
     except Exception as e:

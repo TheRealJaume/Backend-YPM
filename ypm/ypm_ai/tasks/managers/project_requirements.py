@@ -1,19 +1,22 @@
 import assemblyai as aai
 from dotenv import load_dotenv
+import google.generativeai as genai
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
-from ypm_ai.tasks.prompts.project.models import ProjectRequirements
-from ypm_ai.tasks.prompts.project.text import summarize_requirements_prompt
-
+from ypm_ai.tasks.prompts.project.models import ProjectRequirements, RequirementsFromText
+from ypm_ai.tasks.prompts.project.text import summarize_requirements_prompt, get_requirements_from_text_prompt
+from pathlib import Path
 
 class RequirementsManager:
 
-    def __init__(self, audio_file=None, requirements_text=None):
+    def __init__(self, audio_file=None, requirements_text=None, text_file=None):
         load_dotenv()
         self.audio_file = audio_file
+        self.text_file = text_file
         self.requirements_text = requirements_text
         self.model = GoogleGenerativeAI(model="gemini-1.5-flash")
+        self.text_model = genai.GenerativeModel("gemini-1.5-flash")
 
     def transcript_audio(self, file_url, text_with_speaker_labels=''):
         # Use model to transcript audio from text
@@ -56,3 +59,20 @@ class RequirementsManager:
             "query": requirements_prompt
         })
         return result
+
+    def get_requirements_from_text(self):
+        # Upload requirements text file
+        file_path = str(Path(__file__).parents[3] / "media" / self.text_file)
+        doc_file = genai.upload_file(file_path)
+        # Get the requirements prompt from text file
+        prompt = get_requirements_from_text_prompt()
+        # Get the output structure for the requirements
+        result = self.text_model.generate_content([doc_file, "\n\n", prompt],
+                                             generation_config=genai.GenerationConfig(
+                                                 response_mime_type="application/json",
+                                                 response_schema=RequirementsFromText
+                                             ),
+                                             )
+
+        print(f"{result.text=}")
+        return result.text

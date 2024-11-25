@@ -3,7 +3,8 @@ from django.contrib import admin
 from project.departments.models import ProjectDepartment
 from project.jira.models import ProjectJira
 from project.phases.models import ProjectPhase
-from project.projects.models import Project, ProjectRequirement
+from project.projects.models import Project
+from project.requirements.models import ProjectRequirement
 from project.sprints.models import ProjectSprint
 from project.task.models import ProjectTask
 from project.technologies.models import ProjectTechnology
