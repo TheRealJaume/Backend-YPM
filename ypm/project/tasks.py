@@ -8,7 +8,7 @@ from project.requirements.serializers import ProjectRequirementSerializer
 from project.sprints.serializers import AITaskOrganizationSerializer
 from project.task.models import ProjectTask
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
-from project.task.utils import serialize_project_tasks, save_tasks_in_database, save_assignment_in_database, \
+from project.task.utils import serialize_project_tasks, save_project_tasks_in_database, save_assignment_in_database, \
     save_estimation_in_database, save_organization_in_database, serialize_sprint_tasks
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
@@ -36,9 +36,10 @@ def request_project_tasks(request_project):
                                      num_tasks_per_phase=10,
                                      num_subtasks_per_department=10,
                                      excel_file=False)
-        task_dict = manager.generate_project_tasks()
-        saved, message = save_tasks_in_database(task_dict, project.id)
-        result = serialize_project_tasks(project)
+        for department in data['departments']:
+            task_dict = manager.generate_project_tasks(department)
+            saved, message = save_project_tasks_in_database(task_dict, project.id)
+            result = serialize_project_tasks(project)
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)
     return result

@@ -15,8 +15,14 @@ def project_task_prompt(company_name, company_definition, project_definition, pr
     return prompt_1
 
 
-def department_task_prompt():
-    prompt_1 = "Eres un experto en gestión de proyectos. Asumiendo el rol de equipo en {department},"
+def department_task_prompt(department, project_requirements, num_tasks_per_department):
+    prompt_1 = "Eres un experto en gestión de proyectos. Asumiendo el rol de equipo en {department}, desarrollarás un listado" \
+               "de tareas necesarias para cumplir con los requisitos que te envío a continuación: {project_requirements}" \
+               "Las tareas tienen que crearse para cada una de las siguientes fases del proyecto: 1. Planificación y " \
+                "toma de requisitos 2. Desarrollo e implementación 3. Entrega y puesta en producción." \
+                "Proporciona una lista de {num_tasks_per_department} tareas que cumplan con los requerimientos enviados."
+    prompt_1 = prompt_1.format(department=department, project_requirements=project_requirements,
+                               num_tasks_per_department=num_tasks_per_department)
     return prompt_1
 
 
