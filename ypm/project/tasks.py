@@ -1,5 +1,6 @@
 from celery import shared_task, current_task
 
+from project.departments.models import ProjectDepartment
 from project.projects.models import Project
 from project.projects.serializers import AITaskProjectSerializer
 from project.projects.utils import save_requirements_in_database, save_requirements_from_text_file
@@ -9,7 +10,8 @@ from project.sprints.serializers import AITaskOrganizationSerializer
 from project.task.models import ProjectTask
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
 from project.task.utils import serialize_project_tasks, save_project_tasks_in_database, save_assignment_in_database, \
-    save_estimation_in_database, save_organization_in_database, serialize_sprint_tasks
+    save_estimation_in_database, save_organization_in_database, serialize_sprint_tasks, \
+    save_department_tasks_in_database
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
 from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
@@ -37,9 +39,9 @@ def request_project_tasks(request_project):
                                      num_subtasks_per_department=10,
                                      excel_file=False)
         for department in data['departments']:
-            task_dict = manager.generate_project_tasks(department)
-            saved, message = save_project_tasks_in_database(task_dict, project.id)
-            result = serialize_project_tasks(project)
+            task_dict = manager.request_task_per_department(department)
+            saved, message = save_department_tasks_in_database(task_dict, project)
+        result = serialize_project_tasks(project)
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)
     return result
@@ -50,19 +52,23 @@ def request_assign_project_tasks(request_project):
     try:
         project = Project.objects.get(id=request_project)
         # Project tasks to be sent
-        project_tasks = ProjectTask.objects.filter(project=project)
-        many = True if project_tasks.count() > 1 else False
-        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
-        tasks = AITaskAssignmentSerializer(project_tasks_data, many=many).data
+        departments = ProjectDepartment.objects.filter(project=project)
         # Project workers to be sent
         project_workers = ProjectWorker.objects.filter(project=project)
         many = True if project_workers.count() > 1 else False
         project_workers_data = project_workers if project_workers.count() > 1 else project_workers.first()
         workers = AIProjectWorkerSerializer(project_workers_data, many=many).data
-        manager = TaskAssignmentManager(project_tasks=tasks, project_workers=workers,
-                                        excel_file=False)
-        assigend_task_dict = manager.assign_project_tasks()
-        saved, message = save_assignment_in_database(assigend_task_dict)
+        # Iterate over all departments to get the tasks for each of them
+        for department in departments:
+            department_tasks = ProjectTask.objects.filter(department=department)
+            many = True if department_tasks.count() > 1 else False
+            project_tasks_data = department_tasks if department_tasks.count() > 1 else department_tasks.first()
+            tasks = AITaskAssignmentSerializer(project_tasks_data, many=many).data
+            manager = TaskAssignmentManager(project_tasks=tasks, project_workers=workers,
+                                            excel_file=False)
+            assigned_tasks = manager.assign_project_tasks()
+            # Envía el contenido de cada llave a save_assignment_in_database
+            saved, message = save_assignment_in_database(assigned_tasks)
         result = serialize_project_tasks(project)
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)
@@ -74,13 +80,16 @@ def request_estimate_project_tasks(request_project):
     try:
         project = Project.objects.get(id=request_project)
         project_tasks = ProjectTask.objects.filter(project=project)
-        many = True if project_tasks.count() > 1 else False
-        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
-        data = AITaskEstimationSerializer(project_tasks_data, many=many).data
-        manager = TaskEstimationManager(project_tasks=data,
-                                        excel_file=False)
-        estimated_tasks = manager.estimate_project_tasks()
-        saved, message = save_estimation_in_database(estimated_tasks)
+        departments = ProjectDepartment.objects.filter(project=project)
+        for department in departments:
+            department_tasks = project_tasks.filter(department=department)
+            many = True if department_tasks.count() > 1 else False
+            department_tasks_data = department_tasks if department_tasks.count() > 1 else department_tasks.first()
+            data = AITaskEstimationSerializer(department_tasks_data, many=many).data
+            manager = TaskEstimationManager(project_tasks=data,
+                                            excel_file=False)
+            estimated_tasks = manager.estimate_project_tasks()
+            saved, message = save_estimation_in_database(estimated_tasks)
         result = serialize_project_tasks(project)
     except Exception as e:
         print("Error en la solicitud a AI-YPM:", e)

@@ -104,23 +104,22 @@ def save_department_tasks_in_database(task_info, project):
       This function is used to save the tasks in the database.
       """
     try:
-        for department in task_info['departments']:
-            department_name = department['department']
-            phases = department['phases']
-            for phase in phases:
-                phase_name = phase['name']
-                try:
-                    project_phase = ProjectPhase.objects.get(name=phase_name, project=project)
-                except:
-                    project_phase = ProjectPhase.objects.create(name=phase_name, description=phase_name,
-                                                                project=project)
-                tasks = phase['tasks']
-                for task in tasks:
-                    project_department = ProjectDepartment.objects.get(project=project,
-                                                                       department__name=department_name)
-                    ProjectTask.objects.create(project=project, name=task['task_name'],
-                                               description=task['task_description'],
-                                               phase=project_phase, department=project_department)
+        department_name = task_info['department']
+        phases = task_info['phases']
+        for phase in phases:
+            phase_name = phase['name']
+            try:
+                project_phase = ProjectPhase.objects.get(name=phase_name, project=project)
+            except:
+                project_phase = ProjectPhase.objects.create(name=phase_name, description=phase_name,
+                                                            project=project)
+            tasks = phase['tasks']
+            for task in tasks:
+                project_department = ProjectDepartment.objects.get(project=project,
+                                                                   department__name=department_name)
+                ProjectTask.objects.create(project=project, name=task['task_name'],
+                                           description=task['task_description'],
+                                           phase=project_phase, department=project_department)
         return True, "OK"
     except Exception as e:
         return False, str(e)
