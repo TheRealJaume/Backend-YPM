@@ -4,6 +4,7 @@ from rest_framework import serializers
 # GENERIC
 from company.company.models import Company
 from company.workers.models import Worker
+from technologies.models import Technology
 
 
 class WorkerSerializer(serializers.ModelSerializer):
@@ -53,5 +54,35 @@ class ListWorkerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Worker
-        fields = ["id", "first_name", "last_name", "company"]
+        fields = ["id", "first_name", "last_name", "time", "level"]
 
+
+class UpdateWorkerSerializer(serializers.ModelSerializer):
+    """
+    Serializer to update workers
+    """
+
+    technologies = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Technology.objects.all(),
+        write_only=True
+    )
+
+    class Meta:
+        model = Worker
+        fields = ["first_name", "last_name", "time", "level", "technologies"]
+
+    def update(self, instance, validated_data):
+        # Extrae las tecnologías del payload
+        technologies = validated_data.pop('technologies', [])
+
+        # Actualiza los campos del trabajador
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.time = validated_data.get('time', instance.time)
+        instance.level = validated_data.get('level', instance.level)
+        instance.save()
+
+        # Asocia las tecnologías
+        instance.technologies.set(technologies)
+        return instance

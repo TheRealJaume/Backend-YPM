@@ -9,6 +9,7 @@ class Worker(UUIDModel, SoftDeletableModel, TimeStampedModel):
     time = models.IntegerField(null=False, blank=False)
     level = models.CharField(max_length=240, null=False, blank=False)
     company = models.ForeignKey('company.Company', on_delete=models.CASCADE, related_name='workers')
+    technologies = models.ManyToManyField('technologies.Technology', blank=True, through='WorkerTechnology')
 
     def __str__(self):
         return self.first_name

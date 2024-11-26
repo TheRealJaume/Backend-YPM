@@ -1,12 +1,10 @@
-from django.db import transaction
+from rest_framework import viewsets
 from rest_framework import viewsets
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from technologies.models import Technology
-from technologies.responses import TechnologyResponses
-from technologies.serializers import TechnologySerializer, CreateTechnologySerializer, ListTechnologySerializer
+from technologies.serializers import TechnologySerializer, ListTechnologySerializer
 
 
 class TechnologyViewset(viewsets.ModelViewSet):

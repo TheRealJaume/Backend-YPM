@@ -53,7 +53,7 @@ class ListTechnologySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Technology
-        fields = ["name", "description", "group"]
+        fields = ["id", "name", "description"]
 
 
 # PROJECT TASK

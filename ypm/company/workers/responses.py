@@ -21,12 +21,30 @@ class WorkerResponses:
     @staticmethod
     def CreateWorker200(data="None"):
         return WorkerResponses.fill_success_responses(message_code=1,  # "Worker created successfully",
-                                                          data=data,
-                                                          code=200)
+                                                      data=data,
+                                                      code=200)
 
     @staticmethod
     def CreateWorker400(error="None"):
         return WorkerResponses.fill_failed_responses(message_code=2,
-                                                         # "Data sent is not valid to create a Worker",
-                                                         error=error,
-                                                         code=400)
+                                                     # "Data sent is not valid to create a Worker",
+                                                     error=error,
+                                                     code=400)
+
+    @staticmethod
+    def UpdateWorker200(data="None"):
+        return WorkerResponses.fill_success_responses(message_code=3,
+                                                      data=data,
+                                                      code=200)
+
+    @staticmethod
+    def UpdateWorker404(error="None"):
+        return WorkerResponses.fill_failed_responses(message_code=4,
+                                                     error=error,
+                                                     code=404)
+
+    @staticmethod
+    def UpdateWorker400(error="None"):
+        return WorkerResponses.fill_failed_responses(message_code=5,
+                                                     error=error,
+                                                     code=400)
