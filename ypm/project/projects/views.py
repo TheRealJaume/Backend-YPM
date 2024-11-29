@@ -92,8 +92,13 @@ class ProjectViewset(viewsets.ModelViewSet):
                 project = Project.objects.get(id=request.GET['project'])
             except Exception:
                 return Response(ProjectResponses.ProjectTasks204(), 204)
-            serialized_tasks = serialize_project_tasks(project)
-            return Response(ProjectResponses.ProjectTasks200(serialized_tasks), 200)
+            project_tasks = ProjectTask.objects.filter(project=project)
+            if project_tasks.count() > 0:
+                serialized_tasks = serialize_project_tasks(project)
+                return Response(ProjectResponses.ProjectTasks200(serialized_tasks), 200)
+            else:
+                return Response(ProjectResponses.ProjectTasks204(), 200)
+
 
     @action(detail=False, methods=['post'])
     def export_excel(self, request):

@@ -12,7 +12,6 @@ from project.tasks import request_project_tasks, request_assign_project_tasks, r
 
 
 class ProjectTaskFilter:
-
     def filter_queryset(self, request, queryset, view):
         return queryset.filter(project=request.GET['project'])
 
@@ -33,6 +32,18 @@ class TaskViewset(viewsets.ModelViewSet):
             return self.serializer_action_classes[self.action]
         except (KeyError, AttributeError):
             super().get_serializer_class()
+
+    def list(self, request, *args, **kwargs):
+        # Filtrar el queryset según el filtro configurado
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Si el queryset está vacío, devolver un 204
+        if not queryset.exists():
+            return Response(ProjectTaskResponses.ListProjectTask204(), 204)
+
+        # Si hay resultados, proceder normalmente
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(ProjectTaskResponses.ListProjectTask200(serializer.data), 200)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -86,10 +97,23 @@ class TaskViewset(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def task_status(self, request):
-        result = AsyncResult(request.data['task_id'])
+        task_id = request.data['task_id']
+        result = AsyncResult(task_id)
+
+        if isinstance(result.info, dict):
+            progress = result.info.get("progress")
+            message = result.info.get("message")
+            data = result.info.get("data")  # Obtener la lista (si existe)
+        else:
+            progress = None
+            message = None
+            data = None
+
         response_data = {
-            "task_id": request.data['task_id'],
+            "requirement_id": task_id,
             "status": result.status,
-            "result": result.result if result.status == "SUCCESS" else None
+            "progress": progress,
+            "message": message,
+            "result": data if result.status == "SUCCESS" else None,
         }
         return Response(ProjectTaskResponses.CheckStatusProjectTask200(response_data), 200)

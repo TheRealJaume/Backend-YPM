@@ -117,3 +117,14 @@ class ProjectTaskResponses:
         return ProjectTaskResponses.fill_failed_responses(message_code=16,
                                                           error=error,
                                                           code=400)
+
+    @staticmethod
+    def ListProjectTask204(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=16,
+                                                           data=data,
+                                                           code=204)
+    @staticmethod
+    def ListProjectTask200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=17,
+                                                           data=data,
+                                                           code=200)

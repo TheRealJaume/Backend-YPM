@@ -24,6 +24,9 @@ from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 @shared_task
 def request_project_tasks(request_project):
     try:
+        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+                                                          "message": f"Creating project tasks..."
+                                                          })
         project = Project.objects.get(id=request_project)
         data = AITaskProjectSerializer(project).data
         manager = ProjectTaskManager(company_name=data['company']['name'],
@@ -38,13 +41,28 @@ def request_project_tasks(request_project):
                                      num_tasks_per_phase=10,
                                      num_subtasks_per_department=10,
                                      excel_file=False)
-        for department in data['departments']:
+        total_departments = len(data['departments'])
+        for i, department in enumerate(data['departments']):
+            # Paso 1: Crear tareas para el departamento (department)
+            current_progress = (i / total_departments) * 100
+            current_task.update_state(state="PROGRESS", meta={"progress": current_progress if current_progress > 0 else 5,
+                                                              "message": f"Creating tasks for department {department['name']}"
+                                                              })
             task_dict = manager.request_task_per_department(department)
+            # Paso 2: Guardar las tareas para el departamento (department)
             saved, message = save_department_tasks_in_database(task_dict, project)
+        # Paso : Serializar las tareas para todos los departamentos
         result = serialize_project_tasks(project)
+        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Tasks created successfully",
+                                                         "data": result})
     except Exception as e:
-        print("Error en la solicitud a AI-YPM:", e)
-    return result
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__
+            }
+        )
 
 
 @shared_task
@@ -161,7 +179,8 @@ def get_requirements_from_text(file_path, project):
         requirements = text_manager.get_requirements_from_text()
         project = Project.objects.get(id=project)
         # Paso 2: Guardando en bbdd
-        current_task.update_state(state="PROGRESS", meta={"progress": 50, "message": "Saving requirements in database ..."})
+        current_task.update_state(state="PROGRESS",
+                                  meta={"progress": 50, "message": "Saving requirements in database ..."})
         saved, message = save_requirements_from_text_file(requirements=requirements, project=project)
         if saved:
             project_requirements = ProjectRequirement.objects.filter(project=project)
@@ -183,4 +202,3 @@ def get_requirements_from_text(file_path, project):
                 "file_path": file_path,
             }
         )
-
