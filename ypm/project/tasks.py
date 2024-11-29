@@ -43,9 +43,9 @@ def request_project_tasks(request_project):
                                      num_subtasks_per_department=10,
                                      excel_file=False)
         total_departments = len(data['departments'])
-        for i, department in enumerate(data['departments']):
+        for i, department in enumerate(data['departments'], start=1):
             # Paso 1: Crear tareas para el departamento (department)
-            current_progress = (i + 1 / total_departments) * 100
+            current_progress = ((i / total_departments) * 100) - 1
             current_task.update_state(state="PROGRESS",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Creating tasks for department {department['name']}"
@@ -59,7 +59,7 @@ def request_project_tasks(request_project):
             saved, message = save_department_tasks_in_database(task_dict, project)
         # Paso 3: Serializar las tareas para todos los departamentos
         result = serialize_project_tasks(project)
-        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Tasks created successfully",
+        current_task.update_state(state="SUCCESS", meta={"progress": 99, "message": "Tasks created successfully",
                                                          "data": result})
     except Exception as e:
         current_task.update_state(
@@ -88,9 +88,9 @@ def request_assign_project_tasks(request_project):
         workers = AIProjectWorkerSerializer(project_workers_data, many=many).data
         # Iterate over all departments to get the tasks for each of them
         total_departments = departments.count()
-        for i, department in enumerate(departments):
+        for i, department in enumerate(departments, start=1):
             # Paso 1: Asignar tareas para el departamento (department)
-            current_progress = (i / total_departments) * 100
+            current_progress = ((i / total_departments) * 100) - 1
             current_task.update_state(state="PROGRESS",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Assigning tasks to department {department.department.name}"
@@ -109,7 +109,7 @@ def request_assign_project_tasks(request_project):
                                             })
             saved, message = save_assignment_in_database(assigned_tasks)
         result = serialize_project_tasks(project)
-        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Assignments created successfully",
+        current_task.update_state(state="SUCCESS", meta={"progress": 99, "message": "Assignments created successfully",
                                                          "data": result})
     except Exception as e:
         current_task.update_state(
@@ -132,9 +132,9 @@ def request_estimate_project_tasks(request_project):
         project_tasks = ProjectTask.objects.filter(project=project)
         departments = ProjectDepartment.objects.filter(project=project)
         total_departments = departments.count()
-        for i, department in enumerate(departments):
+        for i, department in enumerate(departments, start=1):
             # Paso 1: Asignar tareas para el departamento (department)
-            current_progress = (i / total_departments) * 100
+            current_progress = ((i / total_departments) * 100) - 1
             current_task.update_state(state="PROGRESS",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Estimating tasks of department {department.department.name}"
@@ -153,7 +153,7 @@ def request_estimate_project_tasks(request_project):
                                             })
             saved, message = save_estimation_in_database(estimated_tasks)
         result = serialize_project_tasks(project)
-        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Estimation successfully created",
+        current_task.update_state(state="SUCCESS", meta={"progress": 99, "message": "Estimation successfully created",
                                                          "data": result})
     except Exception as e:
         current_task.update_state(
@@ -199,7 +199,7 @@ def get_requirements_from_audio(file_path, project):
         saved, message = save_requirements_in_database(requirements=requirements, project=project)
         if saved:
             current_task.update_state(state="PROGRESS",
-                                      meta={"progress": 100, "message": "Task completed", "file_path": file_path})
+                                      meta={"progress": 99, "message": "Task completed", "file_path": file_path})
             project_requirements = ProjectRequirement.objects.filter(project=project)
             many = True if project_requirements.count() > 1 else False
             data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
@@ -238,7 +238,7 @@ def get_requirements_from_text(file_path, project):
             many = True if project_requirements.count() > 1 else False
             data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
             serialized_requirements = ProjectRequirementSerializer(data, many=many)
-            current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Task completed",
+            current_task.update_state(state="SUCCESS", meta={"progress": 99, "message": "Task completed",
                                                              "data": serialized_requirements.data,
                                                              "file_path": file_path})
         else:
