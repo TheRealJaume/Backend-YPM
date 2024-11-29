@@ -124,10 +124,21 @@ def request_assign_project_tasks(request_project):
 @shared_task
 def request_estimate_project_tasks(request_project):
     try:
+        # Paso 0: Crear Manager
+        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+                                                          "message": f"Estimating project tasks..."
+                                                          })
         project = Project.objects.get(id=request_project)
         project_tasks = ProjectTask.objects.filter(project=project)
         departments = ProjectDepartment.objects.filter(project=project)
-        for department in departments:
+        total_departments = departments.count()
+        for i, department in enumerate(departments):
+            # Paso 1: Asignar tareas para el departamento (department)
+            current_progress = (i / total_departments) * 100
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Estimating tasks of department {department.department.name}"
+                                            })
             department_tasks = project_tasks.filter(department=department)
             many = True if department_tasks.count() > 1 else False
             department_tasks_data = department_tasks if department_tasks.count() > 1 else department_tasks.first()
@@ -135,11 +146,23 @@ def request_estimate_project_tasks(request_project):
             manager = TaskEstimationManager(project_tasks=data,
                                             excel_file=False)
             estimated_tasks = manager.estimate_project_tasks()
+            # Paso 2: Guardar las asignaciones para el departamento (department)
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Saving estimations of department {department.department.name}"
+                                            })
             saved, message = save_estimation_in_database(estimated_tasks)
         result = serialize_project_tasks(project)
+        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Estimation successfully created",
+                                                         "data": result})
     except Exception as e:
-        print("Error en la solicitud a AI-YPM:", e)
-    return result
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__
+            }
+        )
 
 
 @shared_task
