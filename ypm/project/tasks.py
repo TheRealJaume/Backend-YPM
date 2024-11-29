@@ -24,6 +24,7 @@ from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 @shared_task
 def request_project_tasks(request_project):
     try:
+        # Paso 0: Crear Manager
         current_task.update_state(state="PROGRESS", meta={"progress": 1,
                                                           "message": f"Creating project tasks..."
                                                           })
@@ -44,14 +45,19 @@ def request_project_tasks(request_project):
         total_departments = len(data['departments'])
         for i, department in enumerate(data['departments']):
             # Paso 1: Crear tareas para el departamento (department)
-            current_progress = (i / total_departments) * 100
-            current_task.update_state(state="PROGRESS", meta={"progress": current_progress if current_progress > 0 else 5,
-                                                              "message": f"Creating tasks for department {department['name']}"
-                                                              })
+            current_progress = (i + 1 / total_departments) * 100
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Creating tasks for department {department['name']}"
+                                            })
             task_dict = manager.request_task_per_department(department)
             # Paso 2: Guardar las tareas para el departamento (department)
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Saving tasks for department {department['name']}"
+                                            })
             saved, message = save_department_tasks_in_database(task_dict, project)
-        # Paso : Serializar las tareas para todos los departamentos
+        # Paso 3: Serializar las tareas para todos los departamentos
         result = serialize_project_tasks(project)
         current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Tasks created successfully",
                                                          "data": result})
@@ -68,6 +74,10 @@ def request_project_tasks(request_project):
 @shared_task
 def request_assign_project_tasks(request_project):
     try:
+        # Paso 0: Crear Manager
+        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+                                                          "message": f"Assigning project tasks..."
+                                                          })
         project = Project.objects.get(id=request_project)
         # Project tasks to be sent
         departments = ProjectDepartment.objects.filter(project=project)
@@ -77,7 +87,14 @@ def request_assign_project_tasks(request_project):
         project_workers_data = project_workers if project_workers.count() > 1 else project_workers.first()
         workers = AIProjectWorkerSerializer(project_workers_data, many=many).data
         # Iterate over all departments to get the tasks for each of them
-        for department in departments:
+        total_departments = departments.count()
+        for i, department in enumerate(departments):
+            # Paso 1: Asignar tareas para el departamento (department)
+            current_progress = (i / total_departments) * 100
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Assigning tasks to department {department.department.name}"
+                                            })
             department_tasks = ProjectTask.objects.filter(department=department)
             many = True if department_tasks.count() > 1 else False
             project_tasks_data = department_tasks if department_tasks.count() > 1 else department_tasks.first()
@@ -85,12 +102,23 @@ def request_assign_project_tasks(request_project):
             manager = TaskAssignmentManager(project_tasks=tasks, project_workers=workers,
                                             excel_file=False)
             assigned_tasks = manager.assign_project_tasks()
-            # Envía el contenido de cada llave a save_assignment_in_database
+            # Paso 2: Guardar las asignaciones para el departamento (department)
+            current_task.update_state(state="PROGRESS",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Saving assignments for department {department.department.name}"
+                                            })
             saved, message = save_assignment_in_database(assigned_tasks)
         result = serialize_project_tasks(project)
+        current_task.update_state(state="SUCCESS", meta={"progress": 100, "message": "Assignments created successfully",
+                                                         "data": result})
     except Exception as e:
-        print("Error en la solicitud a AI-YPM:", e)
-    return result
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__
+            }
+        )
 
 
 @shared_task

@@ -92,7 +92,6 @@ class GeminiProjectManager:
                 "num_tasks_per_department": self.num_tasks_per_department
             }
         )
-        print("TASK_DICT", self.tasks_dict)
         return result
 
     def divide_task_by_department(self, department, result):
@@ -238,9 +237,6 @@ class GeminiProjectManager:
 
         # Guardar el DataFrame en un archivo Excel
         df.to_excel(filename, index=False, engine='openpyxl')
-
-        print(f"Las tareas han sido exportadas a '{filename}' exitosamente.")
-
 
 ai_projectmanager = GeminiProjectManager(company_name="Google",
                                          company_definition="Nuestra empresa tecnológica de consultoría se especializa en ofrecer asesoramiento y soluciones en el ámbito de la tecnología de la información y la transformación digital. Ayudamos a organizaciones a optimizar sus procesos, implementar nuevas tecnologías y mejorar su infraestructura tecnológica para alcanzar sus objetivos estratégicos",

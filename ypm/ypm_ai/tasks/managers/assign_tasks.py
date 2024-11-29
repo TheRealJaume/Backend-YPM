@@ -37,5 +37,4 @@ class TaskAssignmentManager:
         result = department_chain.invoke({
             "query": task_prompt
         })
-        print(result)
         return result

@@ -74,5 +74,4 @@ class RequirementsManager:
                                              ),
                                              )
 
-        print(f"{result.text=}")
         return result.text
