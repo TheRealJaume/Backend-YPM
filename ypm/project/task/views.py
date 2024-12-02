@@ -121,15 +121,32 @@ class TaskViewset(viewsets.ModelViewSet):
     @action(detail=False, methods=['put'])
     @transaction.atomic
     def bulk_update(self, request, *args, **kwargs):
-        num_tasks = len(request.data['tasks'])
-        tasks = ProjectTask.objects.filter(id__in=request.data['tasks'])
-        if num_tasks == tasks.count():
-            target = request.data['target']
-            if target == 'sprint':
+        target = request.data['target']
+        if target == 'sprint':
+            num_tasks = len(request.data['tasks'])
+            tasks = ProjectTask.objects.filter(id__in=request.data['tasks'])
+            if num_tasks == tasks.count():
                 try:
                     tasks.update(sprint=request.data['sprint'])
                     return Response(ProjectTaskResponses.BulkUpdateProjectTask200(), 200)
                 except Exception as e:
                     return Response(ProjectTaskResponses.BulkUpdateProjectTask404(error=e.message), 404)
-        else:
-            return Response(ProjectTaskResponses.BulkUpdateProjectTasks400(error="No se han podido encontrar las tareas a actualizar"), 400)
+            else:
+                return Response(ProjectTaskResponses.BulkUpdateProjectTasks400(
+                    error="No se han podido encontrar las tareas a actualizar"), 400)
+        elif target == 'time':
+            num_tasks = len(request.data['tasks'])
+            task_ids = [task['taskId'] for task in request.data['tasks']]
+            tasks = ProjectTask.objects.filter(id__in=task_ids)
+            if num_tasks == tasks.count():
+                try:
+                    for task in request.data['tasks']:
+                        project_task = ProjectTask.objects.get(id=task['taskId'])
+                        project_task.time = task['time']
+                        project_task.save()
+                    return Response(ProjectTaskResponses.BulkUpdateProjectTask200(), 200)
+                except Exception as e:
+                    return Response(ProjectTaskResponses.BulkUpdateProjectTask404(error=e.message), 404)
+            else:
+                return Response(ProjectTaskResponses.BulkUpdateProjectTasks400(
+                    error="No se han podido encontrar las tareas a actualizar"), 400)
