@@ -5,10 +5,13 @@ from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from project.task.models import ProjectTask
+
+from company.workers.models import Worker
+from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.responses import ProjectTaskResponses
 from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer, TaskListSerializer
 from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
+from project.workers.models import ProjectWorker
 
 
 class ProjectTaskFilter:
@@ -150,3 +153,13 @@ class TaskViewset(viewsets.ModelViewSet):
             else:
                 return Response(ProjectTaskResponses.BulkUpdateProjectTasks400(
                     error="No se han podido encontrar las tareas a actualizar"), 400)
+        elif target == 'worker':
+            for task in request.data['tasks']:
+                try:
+                    project_task = ProjectTaskWorker.objects.get(task__id=task['taskId'])
+                    new_worker = Worker.objects.get(id=task['workerId'])
+                    project_task.worker = new_worker
+                    project_task.save()
+                except Exception as e:
+                    return Response(ProjectTaskResponses.BulkUpdateProjectTask404(error=e.message), 404)
+            return Response(ProjectTaskResponses.BulkUpdateProjectTask200(), 200)
