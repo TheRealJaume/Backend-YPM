@@ -128,3 +128,21 @@ class ProjectTaskResponses:
         return ProjectTaskResponses.fill_success_responses(message_code=17,
                                                            data=data,
                                                            code=200)
+    @staticmethod
+    def BulkUpdateProjectTask200(data="None"):
+        return ProjectTaskResponses.fill_success_responses(message_code=18,
+                                                           data=data,
+                                                           code=200)
+
+
+    @staticmethod
+    def BulkUpdateProjectTask400(error="None"):
+        return ProjectTaskResponses.fill_failed_responses(message_code=19,
+                                                          error=error,
+                                                          code=400)
+
+    @staticmethod
+    def BulkUpdateProjectTask404(error="None"):
+        return ProjectTaskResponses.fill_failed_responses(message_code=20,
+                                                          error=error,
+                                                          code=404)

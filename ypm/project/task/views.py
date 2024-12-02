@@ -117,3 +117,19 @@ class TaskViewset(viewsets.ModelViewSet):
             "result": data if result.status == "SUCCESS" else None,
         }
         return Response(ProjectTaskResponses.CheckStatusProjectTask200(response_data), 200)
+
+    @action(detail=False, methods=['put'])
+    @transaction.atomic
+    def bulk_update(self, request, *args, **kwargs):
+        num_tasks = len(request.data['tasks'])
+        tasks = ProjectTask.objects.filter(id__in=request.data['tasks'])
+        if num_tasks == tasks.count():
+            target = request.data['target']
+            if target == 'sprint':
+                try:
+                    tasks.update(sprint=request.data['sprint'])
+                    return Response(ProjectTaskResponses.BulkUpdateProjectTask200(), 200)
+                except Exception as e:
+                    return Response(ProjectTaskResponses.BulkUpdateProjectTask404(error=e.message), 404)
+        else:
+            return Response(ProjectTaskResponses.BulkUpdateProjectTasks400(error="No se han podido encontrar las tareas a actualizar"), 400)
