@@ -37,7 +37,12 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
         return True
 
     def create(self, validated_data):
-        workers = validated_data.pop("workers")
+        if isinstance(validated_data, dict):
+            # Create a single worker
+            workers = [validated_data['worker']]
+        else:
+            # Create a batch of workers
+            workers = validated_data.pop("workers")
         for worker in workers:
             # Create a new worker
             company_worker = Worker(first_name=worker['first_name'], last_name=worker['last_name'],
