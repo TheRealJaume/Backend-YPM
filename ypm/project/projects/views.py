@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 # PROJECT
+from company.workers.models import Worker
 from project.projects.models import Project
 from project.projects.responses import ProjectResponses
 from project.projects.serializers import ProjectSerializer, ProjectListSerializer, RetrieveProjectSerializer, \
@@ -130,6 +131,31 @@ class ProjectViewset(viewsets.ModelViewSet):
                     ws.cell(row=row, column=5, value=task.department.department.name)
                     ws.cell(row=row, column=6,
                             value=worker.first().worker.first_name if worker.count() > 0 else 'Unassigned')
+                    row += 1
+
+                # Create individual sheets for each worker
+            workers = ProjectTaskWorker.objects.filter(task__project=project).values_list(
+                'worker', flat=True).distinct()
+
+            for worker_id in workers:
+                worker = Worker.objects.get(id=worker_id)
+                worker_ws = wb.create_sheet(title=f"{worker.first_name}_{worker.last_name}")
+
+                # Write headers in the worker sheet
+                worker_headers = ['Sprint', 'Task', 'Description', 'Estimation (h)']
+                for col_num, header in enumerate(worker_headers, 1):
+                    worker_ws.cell(row=1, column=col_num, value=header)
+
+                # Write tasks assigned to the worker
+                row = 2
+                worker_tasks = ProjectTaskWorker.objects.filter(worker=worker, task__project=project)
+                for worker_task in worker_tasks:
+                    task = worker_task.task
+                    sprint = task.sprint
+                    worker_ws.cell(row=row, column=1, value=sprint.name)
+                    worker_ws.cell(row=row, column=2, value=task.name)
+                    worker_ws.cell(row=row, column=3, value=task.description)
+                    worker_ws.cell(row=row, column=4, value=task.time)
                     row += 1
 
             # Save the Excel file to memory

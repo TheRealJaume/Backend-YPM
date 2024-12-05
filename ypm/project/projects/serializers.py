@@ -7,6 +7,7 @@ from project.jira.models import ProjectJira
 from project.projects.models import Project
 from project.requirements.models import ProjectRequirement
 from project.requirements.serializers import AIProjectRequirementsSerializer
+from project.task.models import ProjectTask
 from project.technologies.models import ProjectTechnology
 from project.technologies.serializers import ProjectTechnologySerializer, AIProjectTechnologyTaskSerializer
 from project.workers.models import ProjectWorker
@@ -65,10 +66,23 @@ class ProjectListSerializer(serializers.ModelSerializer):
     This serializer is used to list the projects
     """
 
+    workersCount = serializers.SerializerMethodField("get_project_workers")
+    tasksCount = serializers.SerializerMethodField("get_project_tasks")
+
     class Meta:
         model = Project
-        fields = ["id", "name", "description", "company"]
+        fields = ["id", "name", "description", "company", "workersCount", "tasksCount"]
 
+    def get_project_workers(self, project):
+        try:
+            return ProjectWorker.objects.filter(project=project).count()
+        except Exception as e:
+            return str(e)
+    def get_project_tasks(self, project):
+        try:
+            return ProjectTask.objects.filter(project=project).count()
+        except Exception as e:
+            return str(e)
 
 # DETAIL
 class InfoProjectSerializer(serializers.ModelSerializer):

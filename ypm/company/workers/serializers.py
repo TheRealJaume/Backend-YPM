@@ -37,7 +37,7 @@ class CreateWorkerSerializer(serializers.ModelSerializer):
         return True
 
     def create(self, validated_data):
-        if isinstance(validated_data, dict):
+        if 'worker' in validated_data:
             # Create a single worker
             workers = [validated_data['worker']]
         else:

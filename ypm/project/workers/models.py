@@ -5,8 +5,6 @@ from project.projects.models import Project
 
 
 # PROJECT WORKER
-
-
 class ProjectWorker(UUIDModel, SoftDeletableModel, TimeStampedModel):
     """ Model representing the association between Worker and Project """
     worker = models.ForeignKey('company.Worker', on_delete=models.CASCADE)
