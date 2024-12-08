@@ -6,7 +6,8 @@ from project.projects.serializers import AITaskProjectSerializer
 from project.projects.utils import save_requirements_in_database, save_requirements_from_text_file
 from project.requirements.models import ProjectRequirement
 from project.requirements.serializers import ProjectRequirementSerializer
-from project.sprints.serializers import AITaskOrganizationSerializer
+from project.sprints.models import ProjectSprint
+from project.sprints.serializers import AITaskOrganizationSerializer, AITSprintOrganizationBasicSerializer
 from project.task.models import ProjectTask
 from project.task.serializers import AITaskEstimationSerializer, AITaskAssignmentSerializer
 from project.task.utils import serialize_project_tasks, save_project_tasks_in_database, save_assignment_in_database, \
@@ -25,7 +26,7 @@ from ypm_ai.tasks.managers.project_requirements import RequirementsManager
 def request_project_tasks(request_project):
     try:
         # Paso 0: Crear Manager
-        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+        current_task.update_state(state="PENDING", meta={"progress": 1,
                                                           "message": f"Creating project tasks..."
                                                           })
         project = Project.objects.get(id=request_project)
@@ -46,13 +47,13 @@ def request_project_tasks(request_project):
         for i, department in enumerate(data['departments'], start=1):
             # Paso 1: Crear tareas para el departamento (department)
             current_progress = ((i / total_departments) * 100) - 1
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Creating tasks for department {department['name']}"
                                             })
             task_dict = manager.request_task_per_department(department)
             # Paso 2: Guardar las tareas para el departamento (department)
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Saving tasks for department {department['name']}"
                                             })
@@ -75,7 +76,7 @@ def request_project_tasks(request_project):
 def request_assign_project_tasks(request_project):
     try:
         # Paso 0: Crear Manager
-        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+        current_task.update_state(state="PENDING", meta={"progress": 1,
                                                           "message": f"Assigning project tasks..."
                                                           })
         project = Project.objects.get(id=request_project)
@@ -91,7 +92,7 @@ def request_assign_project_tasks(request_project):
         for i, department in enumerate(departments, start=1):
             # Paso 1: Asignar tareas para el departamento (department)
             current_progress = ((i / total_departments) * 100) - 1
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Assigning tasks to department {department.department.name}"
                                             })
@@ -103,7 +104,7 @@ def request_assign_project_tasks(request_project):
                                             excel_file=False)
             assigned_tasks = manager.assign_project_tasks()
             # Paso 2: Guardar las asignaciones para el departamento (department)
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Saving assignments for department {department.department.name}"
                                             })
@@ -125,7 +126,7 @@ def request_assign_project_tasks(request_project):
 def request_estimate_project_tasks(request_project):
     try:
         # Paso 0: Crear Manager
-        current_task.update_state(state="PROGRESS", meta={"progress": 1,
+        current_task.update_state(state="PENDING", meta={"progress": 1,
                                                           "message": f"Estimating project tasks..."
                                                           })
         project = Project.objects.get(id=request_project)
@@ -135,7 +136,7 @@ def request_estimate_project_tasks(request_project):
         for i, department in enumerate(departments, start=1):
             # Paso 1: Asignar tareas para el departamento (department)
             current_progress = ((i / total_departments) * 100) - 1
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Estimating tasks of department {department.department.name}"
                                             })
@@ -147,7 +148,7 @@ def request_estimate_project_tasks(request_project):
                                             excel_file=False)
             estimated_tasks = manager.estimate_project_tasks()
             # Paso 2: Guardar las asignaciones para el departamento (department)
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": current_progress if current_progress > 0 else 5,
                                             "message": f"Saving estimations of department {department.department.name}"
                                             })
@@ -168,37 +169,77 @@ def request_estimate_project_tasks(request_project):
 @shared_task
 def request_organize_project_tasks(request_project):
     try:
+        # Paso 0: Crear Manager
+        current_task.update_state(state="PENDING", meta={"progress": 1,
+                                                          "message": f"Organizing project tasks..."
+                                                          })
+        # Get the project tasks
         project = Project.objects.get(id=request_project)
         project_tasks = ProjectTask.objects.filter(project=project)
-        many = True if project_tasks.count() > 1 else False
-        project_tasks_data = project_tasks if project_tasks.count() > 1 else project_tasks.first()
-        data = AITaskOrganizationSerializer(project_tasks_data, many=many).data
-        manager = TaskOrganizationManager(project_tasks=data,
-                                          excel_file=False)
-        estimated_tasks = manager.organize_project_tasks()
-        saved, message = save_organization_in_database(estimated_tasks, project)
+        # Get the departments for the project
+        departments = ProjectDepartment.objects.filter(project=project)
+        # Iterate through the departments to organize tasks
+        total_departments = departments.count()
+        for i, department in enumerate(departments, start=1):
+            current_progress = ((i / total_departments) * 100) - 1
+            current_task.update_state(state="PENDING",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Organizing tasks of department {department.department.name}"
+                                            })
+            # Get the department tasks
+            department_tasks = project_tasks.filter(department=department)
+            many = True if department_tasks.count() > 1 else False
+            department_tasks_data = department_tasks if department_tasks.count() > 1 else department_tasks.first()
+            data = AITaskOrganizationSerializer(department_tasks_data, many=many).data
+            # Look for existing sprints
+            project_sprints = project_tasks.filter(sprint__isnull=False).values_list('sprint', flat=True)
+            if project_sprints.count() > 0:
+                project_sprints_objects = ProjectSprint.objects.filter(id__in=project_sprints)
+                many = True if project_sprints_objects.count() > 1 else False
+                project_sprints_data = project_sprints_objects if project_sprints_objects.count() > 1 else project_sprints_objects.first()
+                sprints_data = AITSprintOrganizationBasicSerializer(project_sprints_data, many=many).data
+            else:
+                sprints_data = None
+            manager = TaskOrganizationManager(project_tasks=data,
+                                              sprints=sprints_data,
+                                              excel_file=False)
+            estimated_tasks = manager.organize_project_tasks()
+            # Paso 2: Guardar las asignaciones para el departamento (department)
+            current_task.update_state(state="PENDING",
+                                      meta={"progress": current_progress if current_progress > 0 else 5,
+                                            "message": f"Saving organization of department {department.department.name}"
+                                            })
+            saved, message = save_organization_in_database(estimated_tasks, project)
         result = serialize_sprint_tasks(project)
+        current_task.update_state(state="SUCCESS",
+                                  meta={"progress": 99, "message": "Organization successfully created",
+                                        "data": result})
     except Exception as e:
-        print("Error en la solicitud a AI-YPM:", e)
-    return result
+        current_task.update_state(
+            state="FAILURE",
+            meta={
+                "error": str(e),
+                "exc_type": type(e).__name__
+            }
+        )
 
 
 @shared_task
 def get_requirements_from_audio(file_path, project):
     try:
         # Paso 1: Transcribir el audio
-        current_task.update_state(state="PROGRESS", meta={"progress": 20, "message": "Transcribing audio ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Transcribing audio ..."})
         transcription = RequirementsManager().transcript_audio(file_path)
         manager = RequirementsManager(requirements_text=transcription)
         # Paso 2: Generar la transcripción
-        current_task.update_state(state="PROGRESS", meta={"progress": 50, "message": "Generating requirements ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 50, "message": "Generating requirements ..."})
         requirements = manager.get_requirements_from_conversation()
         project = Project.objects.get(id=project)
         # Paso 3: Guardando en bbdd
-        current_task.update_state(state="PROGRESS", meta={"progress": 70, "message": "Saving in database ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 70, "message": "Saving in database ..."})
         saved, message = save_requirements_in_database(requirements=requirements, project=project)
         if saved:
-            current_task.update_state(state="PROGRESS",
+            current_task.update_state(state="PENDING",
                                       meta={"progress": 99, "message": "Task completed", "file_path": file_path})
             project_requirements = ProjectRequirement.objects.filter(project=project)
             many = True if project_requirements.count() > 1 else False
@@ -225,12 +266,12 @@ def get_requirements_from_audio(file_path, project):
 def get_requirements_from_text(file_path, project):
     try:
         # Paso 1: Transcribir el audio
-        current_task.update_state(state="PROGRESS", meta={"progress": 20, "message": "Uploading document ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document ..."})
         text_manager = RequirementsManager(text_file=file_path)
         requirements = text_manager.get_requirements_from_text()
         project = Project.objects.get(id=project)
         # Paso 2: Guardando en bbdd
-        current_task.update_state(state="PROGRESS",
+        current_task.update_state(state="PENDING",
                                   meta={"progress": 50, "message": "Saving requirements in database ..."})
         saved, message = save_requirements_from_text_file(requirements=requirements, project=project)
         if saved:

@@ -93,10 +93,23 @@ class ProjectSprintViewset(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def task_status(self, request):
-        result = AsyncResult(request.data['task_id'])
+        task_id = request.data['task_id']
+        result = AsyncResult(task_id)
+
+        if isinstance(result.info, dict):
+            progress = result.info.get("progress")
+            message = result.info.get("message")
+            data = result.info.get("data")  # Obtener la lista (si existe)
+        else:
+            progress = None
+            message = None
+            data = None
+
         response_data = {
-            "task_id": request.data['task_id'],
+            "requirement_id": task_id,
             "status": result.status,
-            "result": result.result if result.status == "SUCCESS" else None
+            "progress": progress,
+            "message": message,
+            "result": data if result.status == "SUCCESS" else None,
         }
         return Response(ProjectSprintResponses.CheckStatusProjectSprint200(response_data), 200)

@@ -14,6 +14,15 @@ class ProjectSprintSerializer(serializers.ModelSerializer):
         model = ProjectSprint
         fields = ['project', 'name', 'description', 'start_date', 'end_date']
 
+# AI TASK ORGANIZATION BASIC
+class AITSprintOrganizationBasicSerializer(serializers.ModelSerializer):
+    """
+    This serializer renders basic information from the ProjectSprint model
+    """
+    class Meta:
+        model = ProjectSprint
+        fields = ['id', 'name', 'description']
+
 
 # AI TASK ORGNAIZATION
 class AITaskOrganizationSerializer(serializers.ModelSerializer):

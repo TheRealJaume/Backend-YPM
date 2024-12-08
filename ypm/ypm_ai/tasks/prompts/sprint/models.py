@@ -6,7 +6,7 @@ class Task(BaseModel):
 
 
 class Sprint(BaseModel):
-    name: str = Field(description="the phase name")
+    name: str = Field(description="the sprint name")
     time: int = Field(description="the time needed to complete all the tasks in the sprint. This value is defined by "
                                   "adding the estimation of the time needed to complete every task of the sprint. Value"
                                   "must be expressed on days")
@@ -14,6 +14,17 @@ class Sprint(BaseModel):
     tasks: list[Task] = Field(description="the list of tasks to be completed when the sprint is finished")
 
 
-class Sprints(BaseModel):
+class ExistingSprint(BaseModel):
+    id: str = Field(description="the sprint id sent in the prompt")
+    name: str = Field(description="the sprint name")
+    tasks: list[Task] = Field(description="the list of tasks to be completed when the sprint is finished")
+
+
+class NoSprints(BaseModel):
     sprint: list[Sprint] = Field(
+        description="the organization where some tasks are included to be done in a defined time")
+
+
+class ExistingSprints(BaseModel):
+    sprint: list[ExistingSprint] = Field(
         description="the organization where some tasks are included to be done in a defined time")

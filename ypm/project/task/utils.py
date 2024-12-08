@@ -161,23 +161,32 @@ def save_organization_in_database(sprint_info, project):
     sprint_start_date = project.init_date
     try:
         for sprint in sprint_info['sprint']:
-            project_sprint = ProjectSprint(name=sprint['name'], description=sprint['target'], project=project)
-            project_sprint.save()
-            # Obtenemos los ids de tareas que pertenecen al sprint
-            task_ids = [task['task_id'] for task in sprint['tasks']]
-            sprint_tasks = ProjectTask.objects.filter(id__in=task_ids)
-            # Asignamos el sprint a las tareas que pertenecen al sprint
-            sprint_tasks.update(sprint=project_sprint)
-            # Obtenemos la fecha fin del sprint a través del manager
-            sprint_time, sprint_end_date = sprint_manager.get_sprint_end_date(sprint=project_sprint, start_date=sprint_start_date)
-            project_sprint.end_date = sprint_end_date
-            project_sprint.start_date = sprint_start_date
-            project_sprint.time = sprint_time
-            project_sprint.save()
-            # Asignamos la fecha fin de un sprint al inicio del siguiente sprint
-            sprint_start_date = sprint_end_date
+            if 'id' not in sprint:
+                project_sprint = ProjectSprint(name=sprint['name'], description=sprint['target'], project=project)
+                project_sprint.save()
+                # Obtenemos los ids de tareas que pertenecen al sprint
+                task_ids = [task['task_id'] for task in sprint['tasks']]
+                sprint_tasks = ProjectTask.objects.filter(id__in=task_ids)
+                # Asignamos el sprint a las tareas que pertenecen al sprint
+                sprint_tasks.update(sprint=project_sprint)
+                # Obtenemos la fecha fin del sprint a través del manager
+                sprint_time, sprint_end_date = sprint_manager.get_sprint_end_date(sprint=project_sprint,
+                                                                                  start_date=sprint_start_date)
+                project_sprint.end_date = sprint_end_date
+                project_sprint.start_date = sprint_start_date
+                project_sprint.time = sprint_time
+                project_sprint.save()
+                # Asignamos la fecha fin de un sprint al inicio del siguiente sprint
+                sprint_start_date = sprint_end_date
+                project.end_date = sprint_end_date
+            else:
+                project_sprint = ProjectSprint.objects.get(id=sprint['id'])
+                # Obtenemos los ids de tareas que pertenecen al sprint
+                task_ids = [task['task_id'] for task in sprint['tasks']]
+                sprint_tasks = ProjectTask.objects.filter(id__in=task_ids)
+                # Asignamos el sprint a las tareas que pertenecen al sprint
+                sprint_tasks.update(sprint=project_sprint)
         # Guardarmos como fecha fin del proyecto la fecha fin del ultimo sprint
-        project.end_date = sprint_end_date
         project.save()
         return True, "OK"
     except Exception as e:
