@@ -61,7 +61,8 @@ LOCAL_APPS = [
     'users',
     'company',
     'project.apps.ProjectConfig',
-    'technologies'
+    'technologies',
+    'payments.apps.PaymentsConfig'
 ]
 
 INSTALLED_APPS = INSTALLED_APPS + LOCAL_APPS
@@ -221,7 +222,6 @@ AI_SERVER_URL = os.getenv('AI_SERVER_URL')
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
 
-
 # STATIC
 STATIC_ROOT = "./var/www/myproject/static"
 STATIC_URL = "/static/"
@@ -233,6 +233,12 @@ ASSEMBLYAI_API_KEY = os.getenv('ASSEMBLYAI_API_KEY')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
 # FLOWER
 CELERY_FLOWER_PORT = 5555
+
+# STRIPE
+STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+
+# FRONTEND
+CLIENT_URL = os.getenv('CLIENT_URL')

@@ -105,8 +105,6 @@ def google_login(request):
                     last_name=last_name,
                     password=None  # Users logging in via Google don’t need a password
                 )
-                response = requests.post(url=settings.AI_SERVER_URL + "/login/google",
-                                         json={"token": token})
             # Create a SocialAccount for the new user
             social_account = SocialAccount.objects.create(
                 user=user,

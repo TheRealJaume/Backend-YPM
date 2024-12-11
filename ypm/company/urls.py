@@ -7,10 +7,10 @@ from company.department.views import CompanyDepartmentViewset, DepartmentViewset
 from company.workers.views import WorkerViewset
 
 router = DefaultRouter()
-router.register(r'^company', CompanyViewset, basename='company')
-router.register(r'^company-department', CompanyDepartmentViewset, basename='company_department')
-router.register(r'^department', DepartmentViewset, basename='department')
-router.register(r'^worker', WorkerViewset, basename='worker')
+router.register('company', CompanyViewset, basename='company')
+router.register('company-department', CompanyDepartmentViewset, basename='company_department')
+router.register('department', DepartmentViewset, basename='department')
+router.register('worker', WorkerViewset, basename='worker')
 
 # The API URLs are now determined automatically by the router.
 urlpatterns = [

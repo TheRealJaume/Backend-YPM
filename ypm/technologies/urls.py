@@ -4,7 +4,7 @@ from technologies.views import TechnologyViewset
 
 # Create a router and register our ViewSets with it.
 router = DefaultRouter()
-router.register(r'^technology',  TechnologyViewset, basename='technology')
+router.register('technology',  TechnologyViewset, basename='technology')
 
 
 # The API URLs are now determined automatically by the router.
