@@ -39,4 +39,4 @@ class UpdateUserCoinSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserCoin
-        fields = 'coins'
+        fields = ['coins']

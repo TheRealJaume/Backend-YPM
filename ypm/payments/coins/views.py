@@ -42,10 +42,10 @@ class UserCoinViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        user_coin = UserCoin.objects.filter(id=kwargs['id'])
+        user_coin = UserCoin.objects.filter(user__id=kwargs['user_id'])
         if user_coin.exists():
             serializer_class = self.get_serializer_class()
-            serializer = serializer_class(data=request.data['updated_coins'])
+            serializer = serializer_class(data=request.data)
             is_valid = serializer.is_valid()
             if is_valid:
                 serializer.update(instance=user_coin.first(), validated_data=serializer.validated_data)
@@ -59,7 +59,6 @@ class UserCoinViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         try:
-
             user_coin = UserCoin.objects.get(user_id=request.user.id)
             serializer = self.get_serializer(user_coin)
             return Response(UserCoinResponses.RetrieveUserCoin200(serializer.data), 200)

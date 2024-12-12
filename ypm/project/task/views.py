@@ -7,11 +7,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from company.workers.models import Worker
+from payments.coins.models import UserCoin
 from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.responses import ProjectTaskResponses
 from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer, TaskListSerializer
 from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
 from project.workers.models import ProjectWorker
+from ypm import settings
 
 
 class ProjectTaskFilter:
@@ -111,6 +113,11 @@ class TaskViewset(viewsets.ModelViewSet):
             progress = None
             message = None
             data = None
+
+        if result.status == "SUCCESS":
+            user_coins = UserCoin.objects.get(user=request.user)
+            user_coins.coins = user_coins.coins - settings.TASK_INFO_REQUEST_VALUE
+            user_coins.save()
 
         response_data = {
             "requirement_id": task_id,

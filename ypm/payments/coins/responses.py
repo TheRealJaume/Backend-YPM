@@ -31,10 +31,10 @@ class UserCoinResponses:
                                                        code=400)
 
     @staticmethod
-    def UpdateUserCoin500(error="None"):
+    def UpdateUserCoin404(error="None"):
         return UserCoinResponses.fill_failed_responses(message_code=3,
                                                        error=error,
-                                                       code=500)
+                                                       code=404)
 
     @staticmethod
     def RetrieveUserCoin200(data="None"):

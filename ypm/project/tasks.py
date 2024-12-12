@@ -268,11 +268,13 @@ def get_requirements_from_text(file_path, project):
         # Paso 1: Transcribir el audio
         current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document ..."})
         text_manager = RequirementsManager(text_file=file_path)
+        current_task.update_state(state="PENDING", meta={"progress": 40, "message": "Extracting requirements from document ..."})
         requirements = text_manager.get_requirements_from_text()
+        current_task.update_state(state="PENDING", meta={"progress": 60, "message": "Summarizing requirements ..."})
         project = Project.objects.get(id=project)
         # Paso 2: Guardando en bbdd
         current_task.update_state(state="PENDING",
-                                  meta={"progress": 50, "message": "Saving requirements in database ..."})
+                                  meta={"progress": 70, "message": "Saving requirements in database ..."})
         saved, message = save_requirements_from_text_file(requirements=requirements, project=project)
         if saved:
             project_requirements = ProjectRequirement.objects.filter(project=project)
