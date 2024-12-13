@@ -22,8 +22,7 @@ WORKDIR /ypm
 COPY --from=builder /install /usr/local
 COPY . .
 
-RUN adduser --disabled-password --gecos '' appuser
-USER appuser
+RUN apt-get update && apt-get install -y libpq-dev
 
 EXPOSE 8000
 
