@@ -108,7 +108,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost",
     "http://localhost:5173",
     "https://ai-ypm.onrender.com",
-    "https://frontend-ypm.vercel.app"
+    "https://frontend-ypm.vercel.app",
+    "http://ec2-3-248-226-39.eu-west-1.compute.amazonaws.com"
 ]
 
 # Database
@@ -245,7 +246,6 @@ STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 
 # FRONTEND
 CLIENT_URL = os.getenv('CLIENT_URL')
-
 
 # REQUESTS COINS VALUES
 TASK_INFO_REQUEST_VALUE = 10
