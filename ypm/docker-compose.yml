@@ -26,9 +26,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    sysctls:
-      - net.core.somaxconn=1024
-      - vm.overcommit_memory=1
 
   celery:
     build:
