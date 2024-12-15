@@ -122,6 +122,9 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('POSTGRESQL_HOST'),
         'PORT': os.getenv('POSTGRESQL_PORT'),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
 
