@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-n3n5gofi2g*zpz5x9&pjhr1tg(kfye6cl3t08np7&i5#0$cp*b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ec2-3-248-226-39.eu-west-1.compute.amazonaws.com", "127.0.0.1", "localhost"]
+ALLOWED_HOSTS = ["ec2-3-248-226-39.eu-west-1.compute.amazonaws.com", "api.yourpm.pro", "127.0.0.1", "localhost"]
 
 # Application definition
 
