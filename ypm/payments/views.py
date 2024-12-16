@@ -9,8 +9,7 @@ from django.conf import settings
 
 from payments.payments.models import UserPayments
 from payments.responses import StripeResponses
-
-from ypm.settings import CLIENT_URL
+from ypm.settings.base import CLIENT_URL
 
 
 class StripeViewSet(viewsets.ModelViewSet):
