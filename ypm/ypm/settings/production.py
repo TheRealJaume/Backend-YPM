@@ -41,7 +41,6 @@ STATIC_ROOT = "/var/www/myproject/static/"
 MEDIA_ROOT = "/var/www/myproject/media/"
 
 # Configuración de seguridad
-SECURE_SSL_REDIRECT = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_HSTS_SECONDS = 3600
