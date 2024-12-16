@@ -130,6 +130,46 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',  # Nivel mínimo de los logs a enviar a la consola
+            'class': 'logging.StreamHandler',  # Envía los logs al stdout
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',  # Nivel de log para logs no capturados por loggers específicos
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',  # Nivel de log para logs de Django
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'DEBUG',  # Muestra consultas SQL en los logs (útil para depuración)
+            'propagate': False,
+        },
+    },
+}
+
+
 # Valores adicionales
 CLIENT_URL = os.getenv('CLIENT_URL')
 AI_SERVER_URL = os.getenv('AI_SERVER_URL')

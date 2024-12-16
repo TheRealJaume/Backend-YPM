@@ -22,3 +22,7 @@ DATABASES = {
 
 # Archivos estáticos en local
 STATICFILES_DIRS = [BASE_DIR / 'staticfiles']
+
+# Logging
+LOGGING['loggers']['django']['level'] = 'DEBUG'
+LOGGING['root']['level'] = 'DEBUG'

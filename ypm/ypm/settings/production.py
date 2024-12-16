@@ -17,6 +17,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://frontend-ypm.vercel.app",
     "https://d236c2bpjduxda.cloudfront.net",
     "https://yourpm.pro",
+    "127.0.0.1",
+    "localhost"
 ]
 
 # Base de datos PostgreSQL
