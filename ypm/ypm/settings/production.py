@@ -8,7 +8,7 @@ ALLOWED_HOSTS = [
     "ec2-3-248-226-39.eu-west-1.compute.amazonaws.com",
     "api.yourpm.pro",
     "yourpm.pro",
-    "3.248.226.39"
+    "34.242.245.215"
 ]
 
 # CORS para producción
