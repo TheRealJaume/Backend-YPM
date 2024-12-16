@@ -31,6 +31,14 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+    "Origin",
+    "X-Requested-With",
+]
+
 # Base de datos PostgreSQL
 DATABASES = {
     'default': {
