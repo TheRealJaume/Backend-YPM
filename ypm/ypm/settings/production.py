@@ -13,12 +13,22 @@ ALLOWED_HOSTS = [
 
 # CORS para producción
 CORS_ALLOWED_ORIGINS = [
-    "https://ai-ypm.onrender.com",
-    "https://frontend-ypm.vercel.app",
     "https://d236c2bpjduxda.cloudfront.net",
     "https://yourpm.pro",
     "127.0.0.1",
     "localhost"
+]
+
+# Opcional: permite credenciales (si usas autenticación con cookies)
+CORS_ALLOW_CREDENTIALS = True
+
+# Opcional: permitir todos los métodos HTTP
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "OPTIONS",
 ]
 
 # Base de datos PostgreSQL
