@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: django
+    volumes:
+      - /var/www/Backend-YPM/ypm/static/:/app/staticfiles/
     ports:
       - "8000:8000"
     env_file:
