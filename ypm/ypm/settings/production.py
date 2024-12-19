@@ -66,7 +66,7 @@ sentry_sdk.init(
 )
 
 # Archivos estáticos y media para producción
-STATIC_ROOT = "/var/www/Backend-YPM/ypm/staticfiles/"
+STATIC_ROOT = "/var/www/Backend-YPM/ypm/static/"
 MEDIA_ROOT = "/var/www/Backend-YPM/ypm/media/"
 
 # Configuración de seguridad
