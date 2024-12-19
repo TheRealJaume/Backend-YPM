@@ -1,5 +1,6 @@
 from .base import *
-
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 # Entorno de producción
 
 DEBUG = False
@@ -54,9 +55,18 @@ DATABASES = {
     }
 }
 
+# Sentry Configuration
+sentry_sdk.init(
+    dsn="https://4801ecf75f8f88b74622f1ee3a73a9ae@o4508494681866240.ingest.de.sentry.io/4508494684422224",
+    traces_sample_rate=1.0,
+    _experiments={
+        "continuous_profiling_auto_start": True,
+    },
+)
+
 # Archivos estáticos y media para producción
-STATIC_ROOT = "/var/www/myproject/static/"
-MEDIA_ROOT = "/var/www/myproject/media/"
+STATIC_ROOT = "/var/www/Backend-YPM/ypm/static/"
+MEDIA_ROOT = "/var/www/Backend-YPM/ypm/media/"
 
 # Configuración de seguridad
 CSRF_COOKIE_SECURE = True
