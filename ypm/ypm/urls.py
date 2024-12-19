@@ -23,6 +23,7 @@ urlpatterns = [
                   path('logout', google_logout, name='google_logout'),
                   path('token/refresh/', refresh_token, name='refresh_token'),
                   path('onboarding/', onboarding, name='onboarding'),
+                  path('sentry-debug/', trigger_error),
                   # company
                   path('', include(company_urls), name='company'),
                   # project
@@ -33,5 +34,4 @@ urlpatterns = [
                   path('', include(technology_urls), name='technology'),
                   # payments
                   path('', include(payment_urls), name='payment'),
-                  path('sentry-debug/', trigger_error),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
