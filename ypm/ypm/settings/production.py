@@ -59,6 +59,7 @@ DATABASES = {
 sentry_sdk.init(
     dsn="https://4801ecf75f8f88b74622f1ee3a73a9ae@o4508494681866240.ingest.de.sentry.io/4508494684422224",
     traces_sample_rate=1.0,
+    integrations=[DjangoIntegration()],
     _experiments={
         "continuous_profiling_auto_start": True,
     },
