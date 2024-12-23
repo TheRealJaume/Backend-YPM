@@ -31,6 +31,7 @@ class ProjectRequirementResponses:
                                                                  # "Data sent is not valid to create a Project",
                                                                  error=error,
                                                                  code=400)
+
     @staticmethod
     def TranscriptProjectRequirements200(data=None):
         return ProjectRequirementResponses.fill_success_responses(message_code=4,  # "Project created successfully",
@@ -44,40 +45,44 @@ class ProjectRequirementResponses:
                                                                   code=200)
 
     @staticmethod
+    def CheckStatusTranscription400(error="None"):
+        return ProjectRequirementResponses.fill_failed_responses(message_code=6,  # "Project created successfully",
+                                                                 error=error,
+                                                                 code=400)
+
+    @staticmethod
     def TranscriptProjectRequirements400(error="None"):
-        return ProjectRequirementResponses.fill_failed_responses(message_code=6,
+        return ProjectRequirementResponses.fill_failed_responses(message_code=7,
                                                                  # "Data sent is not valid to create a Project",
                                                                  error=error,
                                                                  code=400)
 
-
     @staticmethod
     def UpdateProjectRequirement200(data="None"):
-        return ProjectRequirementResponses.fill_success_responses(message_code=7,
-                                                           data=data,
-                                                           code=200)
+        return ProjectRequirementResponses.fill_success_responses(message_code=8,
+                                                                  data=data,
+                                                                  code=200)
 
     @staticmethod
     def UpdateProjectRequirement404(error="None"):
-        return ProjectRequirementResponses.fill_failed_responses(message_code=8,
-                                                          error=error,
-                                                          code=404)
+        return ProjectRequirementResponses.fill_failed_responses(message_code=9,
+                                                                 error=error,
+                                                                 code=404)
 
     @staticmethod
     def UpdateProjectRequirement400(error="None"):
-        return ProjectRequirementResponses.fill_failed_responses(message_code=9,
-                                                          error=error,
-                                                          code=400)
-
+        return ProjectRequirementResponses.fill_failed_responses(message_code=10,
+                                                                 error=error,
+                                                                 code=400)
 
     @staticmethod
     def DeleteProjectRequirement200(data="None"):
-        return ProjectRequirementResponses.fill_success_responses(message_code=10,
-                                                           data=data,
-                                                           code=200)
+        return ProjectRequirementResponses.fill_success_responses(message_code=11,
+                                                                  data=data,
+                                                                  code=200)
 
     @staticmethod
     def DeleteProjectRequirement404(error="None"):
-        return ProjectRequirementResponses.fill_failed_responses(message_code=11,
-                                                          error=error,
-                                                          code=404)
+        return ProjectRequirementResponses.fill_failed_responses(message_code=12,
+                                                                 error=error,
+                                                                 code=404)
