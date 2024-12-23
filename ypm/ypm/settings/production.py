@@ -69,6 +69,9 @@ sentry_sdk.init(
 STATIC_ROOT = "/ypm/staticfiles/"
 MEDIA_ROOT = "/var/www/Backend-YPM/ypm/media/"
 
+# MAX FILE SIZE TO BE UPLOADED
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB (límite para carga en memoria antes de usar disco)
+
 # Configuración de seguridad
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
