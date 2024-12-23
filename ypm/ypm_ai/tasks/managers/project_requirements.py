@@ -7,6 +7,9 @@ from langchain_google_genai import GoogleGenerativeAI
 from ypm_ai.tasks.prompts.project.models import ProjectRequirements, RequirementsFromText
 from ypm_ai.tasks.prompts.project.text import summarize_requirements_prompt, get_requirements_from_text_prompt
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 class RequirementsManager:
 
@@ -63,6 +66,7 @@ class RequirementsManager:
     def get_requirements_from_text(self):
         # Upload requirements text file
         file_path = str(Path(__file__).parents[3] / "media" / self.text_file)
+        logger.info("File path: %s" % file_path)
         doc_file = genai.upload_file(file_path)
         # Get the requirements prompt from text file
         prompt = get_requirements_from_text_prompt()
