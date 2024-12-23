@@ -1,6 +1,7 @@
 from .base import *
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
+
 # Entorno de producción
 
 DEBUG = False
@@ -92,10 +93,14 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': '/var/log/django/django-error.log',
         },
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'console'],
             'level': 'ERROR',
             'propagate': True,
         },
