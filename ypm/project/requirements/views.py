@@ -18,7 +18,7 @@ from project.requirements.serializers import ProjectRequirementSerializer, Proje
     ProjectRequirementUpdateSerializer, ProjectRequirementCreateSerializer
 from project.tasks import get_requirements_from_audio, get_requirements_from_text
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 class ProjectRequirementViewset(viewsets.ModelViewSet):
     queryset = ProjectRequirement.objects.all()
