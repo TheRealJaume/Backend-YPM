@@ -67,6 +67,7 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             print(f"File saved at: {file_path}")
 
             if file_extension in ['.txt', '.pdf']:
+                logger.info("Analizando requerimientos en archivo de texto")
                 task = get_requirements_from_text.delay(file_path=file_path, project=request.data['project'])
                 return Response(
                     ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)

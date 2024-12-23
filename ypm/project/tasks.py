@@ -20,7 +20,9 @@ from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
 from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
 from ypm_ai.tasks.managers.organize_tasks import TaskOrganizationManager
 from ypm_ai.tasks.managers.project_requirements import RequirementsManager
+import logging
 
+logger = logging.getLogger(__name__)
 
 @shared_task
 def request_project_tasks(request_project):
@@ -275,12 +277,15 @@ def get_requirements_from_text(file_path, project):
         # Paso 2: Guardando en bbdd
         current_task.update_state(state="PENDING",
                                   meta={"progress": 70, "message": "Saving requirements in database ..."})
+        logger.info("Guardando requerimientos en bbdd")
         saved, message = save_requirements_from_text_file(requirements=requirements, project=project)
         if saved:
+            logger.info("Requerimientos guardados en bbdd")
             project_requirements = ProjectRequirement.objects.filter(project=project)
             many = True if project_requirements.count() > 1 else False
             data = project_requirements if project_requirements.count() > 1 else project_requirements.first()
             serialized_requirements = ProjectRequirementSerializer(data, many=many)
+            logger.info("Requerimientos preparados para ser devueltos: ", serialized_requirements.data)
             current_task.update_state(state="SUCCESS", meta={"progress": 99, "message": "Task completed",
                                                              "data": serialized_requirements.data,
                                                              "file_path": file_path})
