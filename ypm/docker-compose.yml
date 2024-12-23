@@ -31,6 +31,8 @@ services:
       dockerfile: Dockerfile
     container_name: celery
     command: celery -A ypm worker -l info -P prefork
+    volumes:
+      - /var/log/django:/var/log/django
     depends_on:
       - redis
     env_file:
@@ -41,6 +43,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: celery_beat
+    volumes:
+      - /var/log/django:/var/log/django
     command: celery -A ypm beat -l info
     depends_on:
       - redis
