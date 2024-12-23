@@ -1,4 +1,4 @@
-# DJANGO
+import logging
 import os
 
 from django.http import HttpResponse
@@ -26,6 +26,7 @@ from project.sprints.models import ProjectSprint
 from project.task.models import ProjectTask, ProjectTaskWorker
 from project.task.utils import serialize_project_tasks
 
+logger = logging.getLogger(__name__)  # Configura el logger para esta vista
 
 
 class UserFilterQueryset:
@@ -172,4 +173,5 @@ class ProjectViewset(viewsets.ModelViewSet):
             wb.save(response)
             return response
         except Exception as e:
+            logger.error("Error al exportar Excel: %s", str(e), exc_info=True)
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
