@@ -6,6 +6,7 @@ services:
     container_name: django
     volumes:
       - /var/www/Backend-YPM/ypm/static/:/app/staticfiles/
+      - /var/www/Backend-YPM/ypm/media/:/app/media/
       - /var/log/django:/var/log/django
     ports:
       - "8000:8000"
@@ -33,6 +34,7 @@ services:
     command: celery -A ypm worker -l info -P prefork
     volumes:
       - /var/log/django:/var/log/django
+      - /var/www/Backend-YPM/ypm/media/:/app/media/
     depends_on:
       - redis
     env_file:
@@ -45,6 +47,7 @@ services:
     container_name: celery_beat
     volumes:
       - /var/log/django:/var/log/django
+      - /var/www/Backend-YPM/ypm/media/:/app/media/
     command: celery -A ypm beat -l info
     depends_on:
       - redis
