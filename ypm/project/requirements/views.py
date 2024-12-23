@@ -1,5 +1,5 @@
 import os
-
+import logging
 from celery.result import AsyncResult
 from django.conf import settings
 from django.core.files.base import ContentFile
@@ -18,6 +18,7 @@ from project.requirements.serializers import ProjectRequirementSerializer, Proje
     ProjectRequirementUpdateSerializer, ProjectRequirementCreateSerializer
 from project.tasks import get_requirements_from_audio, get_requirements_from_text
 
+logger = logging.getLogger(__name__)
 
 class ProjectRequirementViewset(viewsets.ModelViewSet):
     queryset = ProjectRequirement.objects.all()
@@ -151,4 +152,8 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             "message": message,
             "result": processed_data if result.status == "SUCCESS" else None,
         }
-        return Response(ProjectRequirementResponses.CheckStatusTranscription200(response_data), 200)
+        if result.status == "FAILURE":
+            logger.error("Error processing requirements")
+            return Response(ProjectRequirementResponses.CheckStatusTranscription400(response_data), 400)
+        else:
+            return Response(ProjectRequirementResponses.CheckStatusTranscription200(response_data), 200)
