@@ -11,6 +11,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class RequirementsManager:
 
     def __init__(self, audio_file=None, requirements_text=None, text_file=None):
@@ -64,18 +65,20 @@ class RequirementsManager:
         return result
 
     def get_requirements_from_text(self):
-        # Upload requirements text file
-        file_path = str(Path(__file__).parents[3] / "media" / self.text_file)
-        logger.info("File path: %s" % file_path)
-        doc_file = genai.upload_file(file_path)
-        # Get the requirements prompt from text file
-        prompt = get_requirements_from_text_prompt()
-        # Get the output structure for the requirements
-        result = self.text_model.generate_content([doc_file, "\n\n", prompt],
-                                             generation_config=genai.GenerationConfig(
-                                                 response_mime_type="application/json",
-                                                 response_schema=RequirementsFromText
-                                             ),
-                                             )
-
+        try:
+            # Upload requirements text file
+            file_path = str(Path(__file__).parents[3] / "media" / self.text_file)
+            logger.info("File path: %s" % file_path)
+            doc_file = genai.upload_file(file_path)
+            # Get the requirements prompt from text file
+            prompt = get_requirements_from_text_prompt()
+            # Get the output structure for the requirements
+            result = self.text_model.generate_content([doc_file, "\n\n", prompt],
+                                                      generation_config=genai.GenerationConfig(
+                                                          response_mime_type="application/json",
+                                                          response_schema=RequirementsFromText
+                                                      ),
+                                                      )
+        except Exception as e:
+            logging.error("Failed to generate requirements: %s", str(e))
         return result.text
