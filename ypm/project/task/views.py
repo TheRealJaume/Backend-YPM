@@ -13,7 +13,8 @@ from project.task.responses import ProjectTaskResponses
 from project.task.serializers import TaskProjectSerializer, TaskUpdateSerializer, TaskListSerializer
 from project.tasks import request_project_tasks, request_assign_project_tasks, request_estimate_project_tasks
 from project.workers.models import ProjectWorker
-from ypm import settings
+from django.conf import settings
+
 
 
 class ProjectTaskFilter:
