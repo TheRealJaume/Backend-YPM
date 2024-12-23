@@ -90,7 +90,7 @@ LOGGING = {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
-            'filename': '/var/log/django/error.log',
+            'filename': '/var/log/django/django-error.log',
         },
     },
     'loggers': {
