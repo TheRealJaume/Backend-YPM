@@ -88,23 +88,23 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {  # Formato detallado para incluir el traceback
+        'verbose': {  # Formato para la consola
             'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
-        'detailed': {
+        'detailed': {  # Formato para el archivo
             'format': '{asctime} {levelname} {message}\n{exc_info}',
             'style': '{',
         },
     },
     'handlers': {
-        'file': {
+        'file': {  # Maneja solo errores y más graves
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': '/var/log/django/django-error.log',
-            'formatter': 'detailed',  # Usa el formato con traceback
+            'formatter': 'detailed',
         },
-        'console': {
+        'console': {  # Maneja información y niveles más altos
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
@@ -112,9 +112,10 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'],
-            'level': 'ERROR',
-            'propagate': True,
+            'handlers': ['file', 'console'],  # Ambos manejadores
+            'level': 'INFO',  # Nivel base para el logger
+            'propagate': True,  # Permite que otros loggers hereden configuraciones
         },
     },
 }
+
