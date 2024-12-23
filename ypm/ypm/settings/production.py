@@ -87,15 +87,27 @@ TASK_INFO_REQUEST_VALUE = 10
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {  # Formato detallado para incluir el traceback
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'detailed': {
+            'format': '{asctime} {levelname} {message}\n{exc_info}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': '/var/log/django/django-error.log',
+            'formatter': 'detailed',  # Usa el formato con traceback
         },
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
