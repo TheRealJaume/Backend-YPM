@@ -105,7 +105,7 @@ LOGGING = {
             'formatter': 'detailed',  # Usa el formato con traceback
         },
         'console': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
