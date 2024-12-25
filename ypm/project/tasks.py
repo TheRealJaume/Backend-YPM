@@ -278,6 +278,8 @@ def get_requirements_from_text(file_path, project):
         logger.info(f"Is S3 storage: {is_s3_storage}")
         logger.info(f"Default storage class: {default_storage.__class__.__name__}")
         logger.info(f"Default storage module: {default_storage.__class__.__module__}")
+        print(f"DJANGO_SETTINGS_MODULE: {os.getenv('DJANGO_SETTINGS_MODULE')}")
+        print(f"DJANGO_SETTINGS_MODULE: {os.getenv('DEFAULT_FILE_STORAGE')}")
         file_url = default_storage.url(file_path) if is_s3_storage else os.path.join(settings.MEDIA_ROOT, file_path)
         logger.info(f"File path/URL: {file_url}")
         text_manager = RequirementsManager(text_file=file_url)
