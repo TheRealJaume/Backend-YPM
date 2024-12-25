@@ -11,7 +11,7 @@ from django.core.wsgi import get_wsgi_application
 
 # Determinar el entorno automáticamente (puedes usar otra lógica si lo prefieres)
 env = os.getenv('DJANGO_ENV', 'local')  # Por defecto usa 'local'
-
+print(f"Running in environment: {env}")
 if env == 'production':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ypm.settings.production')
 else:
