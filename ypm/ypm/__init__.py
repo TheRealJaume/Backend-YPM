@@ -1,9 +1,10 @@
 from __future__ import absolute_import, unicode_literals
 from ypm.celery import app as celery_app
-from django.core.files.storage import get_storage_class
+from django.conf import settings
+from django.utils.module_loading import import_string
 
 __all__ = ('celery_app',)
 
-# Forzar inicialización de default_storage basado en la configuración actual
-StorageClass = get_storage_class()
+# Inicializar el almacenamiento predeterminado
+StorageClass = import_string(settings.DEFAULT_FILE_STORAGE)
 default_storage = StorageClass()
