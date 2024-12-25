@@ -276,6 +276,8 @@ def get_requirements_from_text(file_path, project):
         # Usa la URL del archivo si es almacenamiento S3
         is_s3_storage = "storages" in default_storage.__class__.__module__
         logger.info(f"Is S3 storage: {is_s3_storage}")
+        logger.info(f"Default storage class: {default_storage.__class__.__name__}")
+        logger.info(f"Default storage module: {default_storage.__class__.__module__}")
         file_url = default_storage.url(file_path) if is_s3_storage else os.path.join(settings.MEDIA_ROOT, file_path)
         logger.info(f"File path/URL: {file_url}")
         text_manager = RequirementsManager(text_file=file_url)
