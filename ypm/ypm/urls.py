@@ -10,11 +10,6 @@ from technologies.urls import urlpatterns as technology_urls
 from django.conf.urls.static import static
 
 
-# TEST SENTRY CONFIG
-def trigger_error(request):
-    division_by_zero = 1 / 0
-
-
 urlpatterns = [
                   path('admin/', admin.site.urls),
                   # auth and token
@@ -23,7 +18,6 @@ urlpatterns = [
                   path('logout', google_logout, name='google_logout'),
                   path('token/refresh/', refresh_token, name='refresh_token'),
                   path('onboarding/', onboarding, name='onboarding'),
-                  path('sentry-debug/', trigger_error),
                   # company
                   path('', include(company_urls), name='company'),
                   # project

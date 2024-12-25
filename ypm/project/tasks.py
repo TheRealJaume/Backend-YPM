@@ -1,4 +1,8 @@
+import os
+
 from celery import shared_task, current_task
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 from project.departments.models import ProjectDepartment
 from project.projects.models import Project
@@ -267,12 +271,16 @@ def get_requirements_from_audio(file_path, project):
 @shared_task
 def get_requirements_from_text(file_path, project):
     try:
-        # Paso 1: Transcribir el audio
-        current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document ..."})
-        text_manager = RequirementsManager(text_file=file_path)
-        current_task.update_state(state="PENDING", meta={"progress": 40, "message": "Extracting requirements from document ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document..."})
+
+        # Usa la URL del archivo si es almacenamiento S3
+        is_s3_storage = "storages" in default_storage.__class__.__module__
+        file_url = default_storage.url(file_path) if is_s3_storage else os.path.join(settings.MEDIA_ROOT, file_path)
+        logger.info(f"File path/URL: {file_url}")
+        text_manager = RequirementsManager(text_file=file_url)
+        current_task.update_state(state="PENDING", meta={"progress": 40, "message": "Extracting requirements..."})
         requirements = text_manager.get_requirements_from_text()
-        current_task.update_state(state="PENDING", meta={"progress": 60, "message": "Summarizing requirements ..."})
+        current_task.update_state(state="PENDING", meta={"progress": 60, "message": "Summarizing requirements..."})
         project = Project.objects.get(id=project)
         # Paso 2: Guardando en bbdd
         current_task.update_state(state="PENDING",
@@ -293,6 +301,7 @@ def get_requirements_from_text(file_path, project):
             current_task.update_state(state="FAILURE",
                                       meta={"error": "Failed to save requirements", "file_path": file_path})
     except Exception as e:
+        logger.error("Failed to generate requirements: %s", str(e))
         current_task.update_state(
             state="FAILURE",
             meta={

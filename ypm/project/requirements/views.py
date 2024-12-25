@@ -64,7 +64,8 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             print(f"Received file: {file.name}")
 
             file_path = default_storage.save(f"{file.name}", ContentFile(file.read()))
-            print(f"File saved at: {file_path}")
+            url = default_storage.url(file_path)  # Obtén la URL pública del archivo
+            print(f"File saved at: {file_path}, URL: {url}")
 
             if file_extension in ['.txt', '.pdf']:
                 print("Analizando requerimientos")

@@ -1,4 +1,8 @@
+import os
+
 import assemblyai as aai
+from django.conf import settings
+from django.core.files.storage import default_storage
 from dotenv import load_dotenv
 import google.generativeai as genai
 from langchain_core.output_parsers import JsonOutputParser
@@ -6,8 +10,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
 from ypm_ai.tasks.prompts.project.models import ProjectRequirements, RequirementsFromText
 from ypm_ai.tasks.prompts.project.text import summarize_requirements_prompt, get_requirements_from_text_prompt
-from django.conf import settings
-import os
+from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
@@ -67,9 +70,13 @@ class RequirementsManager:
 
     def get_requirements_from_text(self):
         try:
-            # Upload requirements text file
-            file_path = os.path.join(settings.MEDIA_ROOT, self.text_file)
-            logger.info("File path: %s" % file_path)
+            # Usa la URL del archivo si es almacenamiento S3
+            is_s3_storage = "storages" in default_storage.__class__.__module__
+            file_path = default_storage.url(self.text_file) if is_s3_storage else os.path.join(settings.MEDIA_ROOT,
+                                                                                               self.text_file)
+
+            logger.info(f"File path/URL: {file_path}")
+
             # Subir el archivo al servicio externo
             doc_file = genai.upload_file(file_path)
             # Get the requirements prompt from text file
