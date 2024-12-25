@@ -1,6 +1,7 @@
 from __future__ import absolute_import, unicode_literals
 import os
 from celery import Celery
+from django.core.files.storage import get_storage_class
 
 # Detectar el entorno (por defecto 'local')
 env = os.getenv("DJANGO_ENV", "local")  # Cambia automáticamente según la variable DJANGO_ENV
@@ -19,6 +20,10 @@ app.config_from_object("django.conf:settings", namespace="CELERY")
 
 # Descubrir automáticamente las tareas de los módulos instalados
 app.autodiscover_tasks()
+
+# Forzar inicialización de default_storage
+StorageClass = get_storage_class()
+default_storage = StorageClass()
 
 # Log para confirmar el entorno y configuración en uso
 @app.task(bind=True)
