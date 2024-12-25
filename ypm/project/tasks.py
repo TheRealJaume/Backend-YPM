@@ -20,7 +20,7 @@ from project.task.utils import serialize_project_tasks, save_project_tasks_in_da
     save_department_tasks_in_database
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
-from ypm.celery import StorageClass, get_storage
+from ypm.celery import get_storage
 from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
 from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
 from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
