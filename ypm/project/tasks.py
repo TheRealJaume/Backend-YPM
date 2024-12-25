@@ -3,6 +3,7 @@ import os
 from celery import shared_task, current_task
 from django.conf import settings
 from django.core.files.storage import default_storage
+from django.utils.module_loading import import_string
 
 from project.departments.models import ProjectDepartment
 from project.projects.models import Project
@@ -19,7 +20,7 @@ from project.task.utils import serialize_project_tasks, save_project_tasks_in_da
     save_department_tasks_in_database
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
-from ypm.celery import StorageClass
+from ypm.celery import StorageClass, get_storage
 from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
 from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
 from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
@@ -269,14 +270,20 @@ def get_requirements_from_audio(file_path, project):
         )
 
 
+def get_storage():
+    """Carga la clase de almacenamiento predeterminada configurada en Django settings."""
+    StorageClass = import_string(settings.DEFAULT_FILE_STORAGE)
+    return StorageClass()
+
 @shared_task
 def get_requirements_from_text(file_path, project):
     try:
         current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document..."})
         # Usa la URL del archivo si es almacenamiento S3
-        is_s3_storage = isinstance(default_storage, StorageClass)
-        logger.info(f"Is S3 storage: {is_s3_storage}")
-        is_s3_storage = "storages" in default_storage.__class__.__module__
+        storage_instance = get_storage()
+        is_s3_storage = "storages" in storage_instance.__class__.__module__
+        logger.info(f"Storage class initialized: {storage_instance.__class__.__name__}")
+        logger.info(f"Is S3 storage: {'storages' in storage_instance.__class__.__module__}")
         logger.info(f"Is S3 storage: {is_s3_storage}")
         logger.info(f"Default storage class: {default_storage.__class__.__name__}")
         logger.info(f"Default storage module: {default_storage.__class__.__module__}")
