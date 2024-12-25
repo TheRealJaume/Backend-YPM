@@ -26,6 +26,10 @@ app.autodiscover_tasks()
 StorageClass = import_string(settings.DEFAULT_FILE_STORAGE)
 default_storage = StorageClass()
 
+logger.info(f"DEFAULT_FILE_STORAGE: {settings.DEFAULT_FILE_STORAGE}")
+logger.info(f"AWS_STORAGE_BUCKET_NAME: {settings.AWS_STORAGE_BUCKET_NAME}")
+logger.info(f"Storage class initialized: {default_storage.__class__.__name__}")
+
 # Log para confirmar el entorno y configuración en uso
 @app.task(bind=True)
 def debug_task(self):

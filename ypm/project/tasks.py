@@ -19,6 +19,7 @@ from project.task.utils import serialize_project_tasks, save_project_tasks_in_da
     save_department_tasks_in_database
 from project.workers.models import ProjectWorker
 from project.workers.serializers import AIProjectWorkerSerializer
+from ypm.celery import StorageClass
 from ypm_ai.tasks.managers.assign_tasks import TaskAssignmentManager
 from ypm_ai.tasks.managers.create_tasks import ProjectTaskManager
 from ypm_ai.tasks.managers.estimate_tasks import TaskEstimationManager
@@ -272,8 +273,9 @@ def get_requirements_from_audio(file_path, project):
 def get_requirements_from_text(file_path, project):
     try:
         current_task.update_state(state="PENDING", meta={"progress": 20, "message": "Uploading document..."})
-
         # Usa la URL del archivo si es almacenamiento S3
+        is_s3_storage = isinstance(default_storage, StorageClass)
+        logger.info(f"Is S3 storage: {is_s3_storage}")
         is_s3_storage = "storages" in default_storage.__class__.__module__
         logger.info(f"Is S3 storage: {is_s3_storage}")
         logger.info(f"Default storage class: {default_storage.__class__.__name__}")
