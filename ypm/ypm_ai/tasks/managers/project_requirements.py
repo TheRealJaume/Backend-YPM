@@ -70,15 +70,9 @@ class RequirementsManager:
 
     def get_requirements_from_text(self):
         try:
-            # Usa la URL del archivo si es almacenamiento S3
-            is_s3_storage = "storages" in default_storage.__class__.__module__
-            file_path = default_storage.url(self.text_file) if is_s3_storage else os.path.join(settings.MEDIA_ROOT,
-                                                                                               self.text_file)
-
-            logger.info(f"File path/URL: {file_path}")
-
+            logger.info(f"File path/URL: {self.text_file}")
             # Subir el archivo al servicio externo
-            doc_file = genai.upload_file(file_path)
+            doc_file = genai.upload_file(self.text_file)
             # Get the requirements prompt from text file
             prompt = get_requirements_from_text_prompt()
             # Get the output structure for the requirements
