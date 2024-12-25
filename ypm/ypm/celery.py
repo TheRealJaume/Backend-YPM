@@ -3,6 +3,9 @@ import os
 from celery import Celery
 from django.conf import settings
 from django.utils.module_loading import import_string
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Detectar el entorno (por defecto 'local')
 env = os.getenv("DJANGO_ENV", "local")  # Cambia automáticamente según la variable DJANGO_ENV
