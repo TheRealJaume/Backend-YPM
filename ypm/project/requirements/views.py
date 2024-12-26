@@ -57,6 +57,7 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             else:
                 return Response(ProjectRequirementResponses.CreateProjectRequirements400(error=serializer.errors), 400)
         else:
+            logging.info("FILE: ", request.data['file'].name)
             file_name, file_extension = os.path.splitext(request.data['file'].name)
             if 'file' not in request.data:
                 return Response({"error": "No file provided in request"}, 400)
@@ -71,7 +72,7 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
                 task = get_requirements_from_text.delay(file_path=file_path, project=request.data['project'])
                 return Response(
                     ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)
-            elif file_extension == ['.mp3']:
+            elif file_extension in ['.mp3',]:
                 try:
                     # Generar una URL para el archivo (local o en S3)
                     task = get_requirements_from_audio.delay(file_path=file_path, project=request.data['project'])
