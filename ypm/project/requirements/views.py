@@ -19,7 +19,7 @@ from project.requirements.serializers import ProjectRequirementSerializer, Proje
 from project.tasks import get_requirements_from_audio, get_requirements_from_text
 from ypm.celery import get_storage
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("django")
 
 class ProjectRequirementViewset(viewsets.ModelViewSet):
     queryset = ProjectRequirement.objects.all()

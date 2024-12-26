@@ -240,7 +240,9 @@ def get_requirements_from_audio(file_path, project):
         # Usa la URL del archivo si es almacenamiento S3
         storage_instance = get_storage()
         is_s3_storage = "storages" in storage_instance.__class__.__module__
+        logger.info("Storage instance found at: %s", storage_instance)
         file_url = default_storage.url(file_path) if is_s3_storage else os.path.join(settings.MEDIA_ROOT, file_path)
+        logger.info("File url ",file_url)
         transcription = RequirementsManager().transcript_audio(file_url)
         manager = RequirementsManager(requirements_text=transcription)
         # Paso 2: Generar la transcripción

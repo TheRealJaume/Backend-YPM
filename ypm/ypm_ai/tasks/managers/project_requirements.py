@@ -34,11 +34,18 @@ class RequirementsManager:
             speaker_labels=True,
             language_code="es"
         )
+        # Download file from S3 if exists
 
         transcriber = aai.Transcriber(config=config)
-        transcript = transcriber.transcribe(f"./media/{file_url}")
+        if os.getenv('DJANGO_ENV') == 'production':
+            local_file_path = '/media/local_copy.pdf'
+            self.download_file_from_url(self.text_file, local_file_path)
+            transcript = transcriber.transcribe(local_file_path)
+        else:
+            transcript = transcriber.transcribe(f"./media/{file_url}")
 
         if transcript.status == aai.TranscriptStatus.error:
+            logger.error("Error en la transcripción: ", transcript.error)
             raise Exception(transcript.error)
         else:
             # Iterate through the transcript to label the conversations
