@@ -62,21 +62,11 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
                 return Response({"error": "No file provided in request"}, 400)
 
             file = request.data['file']
-            print(f"Received file: {file.name}")
-            print(f"Default storage class: {default_storage.__class__.__name__}")
-
             # Obtén la clase de almacenamiento configurada en settings
             storage = get_storage()
-            print(f"Using storage class: {storage.__class__.__name__}")
-
             # Guarda el archivo en el almacenamiento configurado
             file_path = storage.save(f"{file.name}", ContentFile(file.read()))
-            url = storage.url(file_path)  # Obtén la URL pública del archivo
-            print(f"File saved at: {file_path}, URL: {url}")
-            print(f"File storage path: {file_path}, Storage class: {default_storage.__class__.__name__}")
             if file_extension in ['.txt', '.pdf']:
-                print("Analizando requerimientos")
-                logger.info("Analizando requerimientos en archivo de texto")
                 task = get_requirements_from_text.delay(file_path=file_path, project=request.data['project'])
                 return Response(
                     ProjectRequirementResponses.CreateProjectRequirements200({"task_id": task.id}), 200)

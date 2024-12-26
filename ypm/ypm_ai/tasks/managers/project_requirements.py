@@ -71,7 +71,6 @@ class RequirementsManager:
 
     def get_requirements_from_text(self):
         try:
-            logger.info(f"File path/URL: {self.text_file}")
             local_file_path = '/media/local_copy.pdf'
             self.download_file_from_url(self.text_file, local_file_path)
             # Subir el archivo al servicio externo
