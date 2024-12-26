@@ -285,7 +285,7 @@ def get_requirements_from_text(file_path, project):
         logger.info("FILE_PATH", file_path)
         file_url = default_storage.url(file_path) if is_s3_storage else os.path.join(settings.MEDIA_ROOT, file_path)
         logger.info("FILE_URL", file_url)
-        text_manager = RequirementsManager(text_file=file_path)
+        text_manager = RequirementsManager(text_file=file_url)
         current_task.update_state(state="PENDING", meta={"progress": 40, "message": "Extracting requirements..."})
         requirements = text_manager.get_requirements_from_text()
         current_task.update_state(state="PENDING", meta={"progress": 60, "message": "Summarizing requirements..."})
