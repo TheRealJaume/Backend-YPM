@@ -37,10 +37,9 @@ class RequirementsManager:
             )
             # Download file from S3 if exists
             transcriber = aai.Transcriber(config=config)
-            logger.info("DJANGO ENV", os.getenv("DJANGO_ENV"))
             if os.getenv('DJANGO_ENV') == 'production':
                 local_file_path = '/media/local_copy.pdf'
-                self.download_file_from_url(self.text_file, local_file_path)
+                self.download_file_from_url(self.file_url, local_file_path)
                 transcript = transcriber.transcribe(local_file_path)
             else:
                 transcript = transcriber.transcribe(f"./media/{file_url}")
