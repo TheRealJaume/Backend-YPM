@@ -75,7 +75,7 @@ class RequirementsManager:
             local_file_path = '/media/local_copy.pdf'
             self.download_file_from_url(self.text_file, local_file_path)
             # Subir el archivo al servicio externo
-            doc_file = genai.upload_file(self.text_file)
+            doc_file = genai.upload_file(local_file_path)
             # Get the requirements prompt from text file
             prompt = get_requirements_from_text_prompt()
             # Get the output structure for the requirements
