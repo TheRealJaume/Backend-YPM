@@ -1,4 +1,5 @@
 import os
+import requests
 
 import assemblyai as aai
 from django.conf import settings
@@ -71,6 +72,8 @@ class RequirementsManager:
     def get_requirements_from_text(self):
         try:
             logger.info(f"File path/URL: {self.text_file}")
+            local_file_path = '/media/local_copy.pdf'
+            self.download_file_from_url(self.text_file, local_file_path)
             # Subir el archivo al servicio externo
             doc_file = genai.upload_file(self.text_file)
             # Get the requirements prompt from text file
@@ -85,3 +88,12 @@ class RequirementsManager:
         except Exception as e:
             logging.error("Failed to generate requirements: %s", str(e))
         return result.text
+
+
+    def download_file_from_url(self, url, local_path):
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(local_path, 'wb') as f:
+                f.write(response.content)
+        else:
+            raise Exception(f"Failed to download file. Status code: {response.status_code}")
