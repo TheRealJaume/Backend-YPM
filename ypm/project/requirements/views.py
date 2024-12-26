@@ -17,6 +17,7 @@ from project.requirements.responses import ProjectRequirementResponses
 from project.requirements.serializers import ProjectRequirementSerializer, ProjectRequirementListSerializer, \
     ProjectRequirementUpdateSerializer, ProjectRequirementCreateSerializer
 from project.tasks import get_requirements_from_audio, get_requirements_from_text
+from ypm.celery import get_storage
 
 logger = logging.getLogger('django')
 
@@ -64,8 +65,13 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             print(f"Received file: {file.name}")
             print(f"Default storage class: {default_storage.__class__.__name__}")
 
-            file_path = default_storage.save(f"{file.name}", ContentFile(file.read()))
-            url = default_storage.url(file_path)  # Obtén la URL pública del archivo
+            # Obtén la clase de almacenamiento configurada en settings
+            storage = get_storage()
+            print(f"Using storage class: {storage.__class__.__name__}")
+
+            # Guarda el archivo en el almacenamiento configurado
+            file_path = storage.save(f"{file.name}", ContentFile(file.read()))
+            url = storage.url(file_path)  # Obtén la URL pública del archivo
             print(f"File saved at: {file_path}, URL: {url}")
             print(f"File storage path: {file_path}, Storage class: {default_storage.__class__.__name__}")
             if file_extension in ['.txt', '.pdf']:
