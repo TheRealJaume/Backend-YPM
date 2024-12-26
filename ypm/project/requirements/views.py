@@ -66,6 +66,7 @@ class ProjectRequirementViewset(viewsets.ModelViewSet):
             storage = get_storage()
             # Guarda el archivo en el almacenamiento configurado
             file_path = storage.save(f"{file.name}", ContentFile(file.read()))
+            logging.info("FILE EXTENSION: ", file_extension)
             if file_extension in ['.txt', '.pdf']:
                 task = get_requirements_from_text.delay(file_path=file_path, project=request.data['project'])
                 return Response(
