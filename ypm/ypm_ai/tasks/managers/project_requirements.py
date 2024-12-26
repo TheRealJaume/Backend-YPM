@@ -39,7 +39,7 @@ class RequirementsManager:
             transcriber = aai.Transcriber(config=config)
             if os.getenv('DJANGO_ENV') == 'production':
                 local_file_path = '/media/local_copy.pdf'
-                self.download_file_from_url(self.file_url, local_file_path)
+                self.download_file_from_url(file_url, local_file_path)
                 transcript = transcriber.transcribe(local_file_path)
             else:
                 transcript = transcriber.transcribe(f"./media/{file_url}")
