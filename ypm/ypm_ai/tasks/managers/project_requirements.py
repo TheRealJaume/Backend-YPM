@@ -28,30 +28,34 @@ class RequirementsManager:
         self.text_model = genai.GenerativeModel("gemini-1.5-flash")
 
     def transcript_audio(self, file_url, text_with_speaker_labels=''):
-        # Use model to transcript audio from text
-        config = aai.TranscriptionConfig(
-            speech_model=aai.SpeechModel.best,
-            speaker_labels=True,
-            language_code="es"
-        )
-        # Download file from S3 if exists
+        try:
+            # Use model to transcript audio from text
+            config = aai.TranscriptionConfig(
+                speech_model=aai.SpeechModel.best,
+                speaker_labels=True,
+                language_code="es"
+            )
+            # Download file from S3 if exists
+            transcriber = aai.Transcriber(config=config)
+            logger.info("DJANGO ENV", os.getenv("DJANGO_ENV"))
+            if os.getenv('DJANGO_ENV') == 'production':
+                local_file_path = '/media/local_copy.pdf'
+                self.download_file_from_url(self.text_file, local_file_path)
+                transcript = transcriber.transcribe(local_file_path)
+            else:
+                transcript = transcriber.transcribe(f"./media/{file_url}")
 
-        transcriber = aai.Transcriber(config=config)
-        if os.getenv('DJANGO_ENV') == 'production':
-            local_file_path = '/media/local_copy.pdf'
-            self.download_file_from_url(self.text_file, local_file_path)
-            transcript = transcriber.transcribe(local_file_path)
-        else:
-            transcript = transcriber.transcribe(f"./media/{file_url}")
-
-        if transcript.status == aai.TranscriptStatus.error:
-            logger.error("Error en la transcripción: ", transcript.error)
-            raise Exception(transcript.error)
-        else:
-            # Iterate through the transcript to label the conversations
-            for utt in transcript.utterances:
-                text_with_speaker_labels += f" Speaker {utt.speaker}:\n{utt.text}\n"
-            return text_with_speaker_labels
+            if transcript.status == aai.TranscriptStatus.error:
+                logger.error("Error en la transcripción: ", transcript.error)
+                raise Exception(transcript.error)
+            else:
+                # Iterate through the transcript to label the conversations
+                for utt in transcript.utterances:
+                    text_with_speaker_labels += f" Speaker {utt.speaker}:\n{utt.text}\n"
+                return text_with_speaker_labels
+        except Exception as e:
+            logger.error("Error en la transcripción: ", e)
+            return str(e)
 
     def get_requirements_from_conversation(self):
         # Request the number of tasks per department and per phase
